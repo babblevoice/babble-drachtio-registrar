@@ -11,6 +11,12 @@
     "type": "git",
     "url": "git+https://github.com/tinpotnick/babble-drachtio-registrar.git"
   },
+  "keywords": [
+    "sip",
+    "drachtio",
+    "auth",
+    "registrar"
+  ],
   "license": "MIT",
   "dependencies": {
     "drachtio-mw-digest-auth": "^0.3.3",
