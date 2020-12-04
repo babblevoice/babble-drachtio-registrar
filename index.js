@@ -1,5 +1,6 @@
 
 const assert = require( "assert" )
+const events = require('events')
 const digestauth = require( "drachtio-mw-digest-auth" )
 const regparser = require( "drachtio-mw-registration-parser" )
 
@@ -44,6 +45,8 @@ class reg {
     this.registeredat = Math.floor( +new Date() / 1000 )
     this.optionsintervaltimer = setInterval( this.pingoptions, 30000, this )
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
+
+    singleton.em.emit( "register", this.info )
   }
 
   get info() {
@@ -74,6 +77,8 @@ class reg {
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
 
     this.registeredat = Math.floor( +new Date() / 1000 )
+
+    singleton.em.emit( "register", this.info )
   }
 
   onexpire( self ) {
@@ -81,6 +86,8 @@ class reg {
   }
 
   destroy() {
+
+    singleton.em.emit( "unregister", this.info )
     clearInterval( this.optionsintervaltimer )
     clearTimeout( this.regexpiretimer )
   }
@@ -196,6 +203,11 @@ class Registrar {
 
     this.options.srf.use( "register", this.reg )
 
+    this.em = new events.EventEmitter()
+  }
+
+  on( event, cb ) {
+    this.em.on( event, cb )
   }
 
   reg( req, res, next ) {
