@@ -43,7 +43,11 @@ class reg {
     this.authorization = user.authorization
     this.user = user
     this.registeredat = Math.floor( +new Date() / 1000 )
-    this.optionsintervaltimer = setInterval( this.pingoptions, 30000, this )
+
+    if( undefined !== singleton.options.optionsinterval ) {
+      this.optionsintervaltimer = setInterval( this.pingoptions, singleton.options.optionsinterval, this )
+    }
+
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
 
     singleton.em.emit( "register", this.info )
@@ -97,9 +101,10 @@ class reg {
     self.contact.forEach( ( c ) => {
       c.optionsfailcount++
 
-      if( c.optionsfailcount > 7 ) {
-        self.user.remove( self )
-        return
+      if( undefined !== singleton.options.optionsfailcount &&
+          c.optionsfailcount > singleton.options.optionsfailcount ) {
+            self.user.remove( self )
+            return
       }
 
       singleton.options.srf.request( c.uri, {
@@ -115,7 +120,9 @@ class reg {
 
         req.on( "response", ( res ) => {
           if( 200 == res.status ) {
-            c.optionsfailcount--
+            if( 0 !== c.optionsfailcount ) { /* shouldn't happen */
+              c.optionsfailcount--
+            }
           }
         } )
       } )
