@@ -226,14 +226,16 @@ class Registrar {
     req.registrar.contact = req.get( "Contact" )
     req.registrar.expires = req.registration.expires
 
-    if( req.registrar.expires < 3600 && 0 !== req.registrar.expires ) {
-      res.send( 423, { /* Interval too brief - can we pass this in as a config item? */
-        headers: {
-          "Contact": req.registrar.contact,
-          "Min-Expires": 3600
-        }
-      } )
-      return
+    if( undefined !== singleton.minexpires &&
+      req.registrar.expires < singleton.minexpires &&
+      0 !== req.registrar.expires ) {
+        res.send( 423, { /* Interval too brief - can we pass this in as a config item? */
+          headers: {
+            "Contact": req.registrar.contact,
+            "Min-Expires": singleton.minexpires
+          }
+        } )
+        return
     }
 
     if( !singleton.domains.has( req.authorization.realm ) ) {
