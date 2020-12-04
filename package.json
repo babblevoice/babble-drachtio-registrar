@@ -1,0 +1,16 @@
+{
+  "name": "babble-drachtio-registrar",
+  "version": "1.0.0",
+  "description": "A simple registrar for use with drachtio sip server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Knight <nick@babblevoice.com>",
+  "license": "MIT",
+  "dependencies": {
+    "drachtio-mw-digest-auth": "^0.3.3",
+    "drachtio-mw-registration-parser": "^0.1.0",
+    "drachtio-srf": "^4.4.40"
+  }
+}
