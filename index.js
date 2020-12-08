@@ -1,8 +1,11 @@
 
+'use strict'
+
 const assert = require( "assert" )
 const events = require('events')
 const digestauth = require( "drachtio-mw-digest-auth" )
 const regparser = require( "drachtio-mw-registration-parser" )
+const parseuri = require( "drachtio-srf" ).parseUri
 
 
 /*
@@ -35,30 +38,38 @@ class reg {
     this.network.source_address = req.source_address
     this.network.source_port = req.source_port
     this.network.protocol = req.protocol
+    this.useragent = req.registrar.useragent
     this.callid = req.get( "call-id" )
     this.contact = req.registration.contact
-    this.contact.forEach( ( c ) => { c.optionsfailcount = 0 } )
     this.aor = req.registration.aor
     this.expires = req.registration.expires
+    if( undefined !== singleton.options.regping ) {
+      this.expires = singleton.options.expires
+    }
     this.authorization = user.authorization
     this.user = user
     this.registeredat = Math.floor( +new Date() / 1000 )
+    this.ping = Math.floor( +new Date() / 1000 )
 
-    if( undefined !== singleton.options.optionsinterval ) {
-      this.optionsintervaltimer = setInterval( this.pingoptions, singleton.options.optionsinterval, this )
+    if( undefined !== singleton.options.optionsping ) {
+      this.optionsintervaltimer = setInterval( this.pingoptions, singleton.options.optionsping * 1000, this )
     }
 
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
+  }
 
-    singleton.em.emit( "register", this.info )
+  get expired() {
+    return ( this.registeredat + this.expires ) < Math.floor( +new Date() / 1000 )
+  }
+
+  /* Expired - but with some buffer */
+  get expiring() {
+    return ( this.registeredat + ( this.expires / 2 ) ) < Math.floor( +new Date() / 1000 )
   }
 
   get info() {
-
-    var optionsfailcounttotal = 0
     var contacts = []
     this.contact.forEach( ( c ) => {
-      optionsfailcounttotal += c.optionsfailcount
       contacts.push( c.uri )
     } )
 
@@ -69,10 +80,11 @@ class reg {
       "expires": this.expires,
       "authorization": this.authorization,
       "registeredat": this.registeredat,
+      "useragent": this.useragent,
       "network": this.network,
       "expiresat": this.registeredat + this.expires,
       "expiresin": this.registeredat + this.expires - Math.floor( +new Date() / 1000 ),
-      "optionsfailcount": optionsfailcounttotal
+      "stale": this.ping < ( Math.floor( +new Date() / 1000 ) - singleton.options.staletime )
     }
   }
 
@@ -81,8 +93,11 @@ class reg {
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
 
     this.registeredat = Math.floor( +new Date() / 1000 )
+  }
 
-    singleton.em.emit( "register", this.info )
+  /* Called when we receive a register which we use instead of options ping */
+  regping() {
+    this.ping = Math.floor( +new Date() / 1000 )
   }
 
   onexpire( self ) {
@@ -90,7 +105,6 @@ class reg {
   }
 
   destroy() {
-
     singleton.em.emit( "unregister", this.info )
     clearInterval( this.optionsintervaltimer )
     clearTimeout( this.regexpiretimer )
@@ -99,14 +113,6 @@ class reg {
   pingoptions( self ) {
 
     self.contact.forEach( ( c ) => {
-      c.optionsfailcount++
-
-      if( undefined !== singleton.options.optionsfailcount &&
-          c.optionsfailcount > singleton.options.optionsfailcount ) {
-            self.user.remove( self )
-            return
-      }
-
       singleton.options.srf.request( c.uri, {
         method: "OPTIONS",
         headers: {
@@ -114,15 +120,13 @@ class reg {
         }
       }, ( err, req ) => {
         if ( err ) {
-          console.log( `Error sending OPTIONS: ${err}` )
+          //console.log( `Error sending OPTIONS: ${err}` )
           return
         }
 
         req.on( "response", ( res ) => {
           if( 200 == res.status ) {
-            if( 0 !== c.optionsfailcount ) { /* shouldn't happen */
-              c.optionsfailcount--
-            }
+            self.ping = Math.floor( +new Date() / 1000 )
           }
         } )
       } )
@@ -147,8 +151,9 @@ class user {
       if( 0 === req.registrar.expires ) return
 
       // New
-      this.registrations.set( ci, new reg( req, this ) )
-      return
+      let r = new reg( req, this )
+      this.registrations.set( ci, r )
+      return r
     }
 
     if( 0 === req.registrar.expires ) {
@@ -157,13 +162,14 @@ class user {
       return
     }
 
-    this.registrations.get( ci ).update()
-
-    console.log( `${this.registrations.size} of registrations for user ${this.authorization.username}` )
+    let r = this.registrations.get( ci )
+    r.update()
+    return r
+    //console.log( `${this.registrations.size} of registrations for user ${this.authorization.username}` )
   }
 
-  remove( reg ) {
-    let callid = reg.callid
+  remove( r ) {
+    let callid = r.callid
     this.registrations.get( callid ).destroy()
     this.registrations.delete( callid )
   }
@@ -180,11 +186,13 @@ class domain {
     }
 
     let u = this.users.get( req.authorization.username )
-    u.reg( req )
+    let r = u.reg( req )
 
     if( 0 === u.registrations.size ) {
       this.users.delete( u.authorization.username )
     }
+
+    return r
   }
 
   get info() {
@@ -202,12 +210,24 @@ class Registrar {
     this.options = options
     this.domains = new Map()
 
-    this.options.srf.use( "register", regparser )
-    this.options.srf.use( "register", digestauth( {
+    this.authdigest = digestauth( {
       proxy: true, /* 407 or 401 */
       passwordLookup: options.passwordLookup
-    } ) )
+    } )
 
+    if( undefined === options.expires ) {
+      options.expires = 3600
+    }
+
+    if( undefined === options.minexpires ) {
+      options.minexpires = options.expires
+    }
+
+    if( undefined === options.staletime ) {
+      options.staletime = options.expires
+    }
+
+    this.options.srf.use( "register", regparser )
     this.options.srf.use( "register", this.reg )
 
     this.em = new events.EventEmitter()
@@ -223,38 +243,98 @@ class Registrar {
     if ( req.method !== "REGISTER" ) return next()
     req.registrar = {}
 
-    req.registrar.contact = req.get( "Contact" )
-    req.registrar.expires = req.registration.expires
+    let parsedaor = parseuri( req.registration.aor )
+    let reg = singleton.isauthed( parsedaor.host, parsedaor.user, req )
 
-    if( undefined !== singleton.minexpires &&
-      req.registrar.expires < singleton.minexpires &&
-      0 !== req.registrar.expires ) {
-        res.send( 423, { /* Interval too brief - can we pass this in as a config item? */
-          headers: {
-            "Contact": req.registrar.contact,
-            "Min-Expires": singleton.minexpires
-          }
-        } )
+    /* Unreg */
+    if( 0 === req.registration.expires && reg ) {
+      reg.onexpire( reg )
+    }
+
+    if( !reg || reg.expiring ) {
+      //console.log( "Requesting auth" )
+      var authed = false
+      singleton.authdigest( req, res, () => { authed = true } )
+      if( !authed ) {
         return
-    }
-
-    if( !singleton.domains.has( req.authorization.realm ) ) {
-      singleton.domains.set( req.authorization.realm, new domain() )
-    }
-
-    let d = singleton.domains.get( req.authorization.realm )
-    d.reg( req )
-
-    res.send( 200, {
-      headers: {
-        'Contact': req.registrar.contact,
-        'Expires': req.registrar.expires
       }
-    } )
 
-    if( 0 == d.users.size ) {
-      singleton.domains.delete( req.authorization.realm )
+      req.registrar.contact = req.get( "Contact" )
+      req.registrar.useragent = req.get( "user-agent" )
+      req.registrar.expires = req.registration.expires
+
+      if( undefined === singleton.options.regping &&
+          undefined !== singleton.options.minexpires &&
+          req.registrar.expires < singleton.options.minexpires &&
+          0 !== req.registrar.expires ) {
+            res.send( 423, { /* Interval too brief - can we pass this in as a config item? */
+              headers: {
+                "Contact": req.registrar.contact,
+                "Min-Expires": singleton.options.minexpires
+              }
+            } )
+            next()
+            return
+      }
+
+      if( !singleton.domains.has( req.authorization.realm ) ) {
+        singleton.domains.set( req.authorization.realm, new domain() )
+      }
+
+      let d = singleton.domains.get( req.authorization.realm )
+      let r = d.reg( req )
+
+      if( 0 == d.users.size ) {
+        singleton.domains.delete( req.authorization.realm )
+      }
+
+      if( r ) {
+        singleton.em.emit( "register", r.info )
+      }
+    } else if( reg ) {
+      reg.regping()
     }
+
+    if( undefined !== singleton.options.regping ) {
+      res.send( 200, {
+        headers: {
+              "Contact": req.get( "Contact" ).replace( /expires=\d+/, `expires=${singleton.options.regping}` ),
+              "Expires": singleton.options.regping
+            }
+      } )
+    } else {
+      res.send( 200, {
+        headers: {
+          "Contact": req.registrar.contact,
+          "Expires": req.registrar.expires
+        }
+      } )
+    }
+
+    next()
+  }
+
+  isauthed( realm, user, req ) {
+
+    if( !this.domains.has( realm ) ) {
+      return false
+    }
+
+    if( !this.domains.get( realm ).users.has( user ) ) {
+      return false
+    }
+
+    let ci = req.get( "call-id" )
+
+    for ( const [ key, reg ] of this.domains.get( realm ).users.get( user ).registrations) {
+      if( req.source_address === reg.network.source_address &&
+          req.source_port === reg.network.source_port  &&
+          ci === reg.callid ) {
+            return reg
+          }
+    }
+
+    return false
   }
 
   realms() {
@@ -273,8 +353,19 @@ class Registrar {
 
   /*
     Get registrations for a user at a realm
+    Either:
+    user( "bling.babblevoice.com", "1000" )
+    or
+    user( "sip:1000@bling.babblevoice.com" )
   */
   user( realm, username ) {
+
+    if( undefined == username ) {
+      let parsed = parseuri( realm )
+      realm = parsed.host
+      username = parsed.user
+    }
+
     if( !this.domains.has( realm ) ) {
       return []
     }
