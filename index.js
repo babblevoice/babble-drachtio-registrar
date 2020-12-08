@@ -207,6 +207,15 @@ class Registrar {
 
   constructor( options ) {
     singleton = this
+
+    this.option = {
+      "expires": 3600,
+      "minexpires": 3600,
+      "staletime": 300
+    }
+    
+    this.options = { ...this.options, ...options }
+
     this.options = options
     this.domains = new Map()
 
@@ -214,18 +223,6 @@ class Registrar {
       proxy: true, /* 407 or 401 */
       passwordLookup: options.passwordLookup
     } )
-
-    if( undefined === options.expires ) {
-      options.expires = 3600
-    }
-
-    if( undefined === options.minexpires ) {
-      options.minexpires = options.expires
-    }
-
-    if( undefined === options.staletime ) {
-      options.staletime = options.expires
-    }
 
     this.options.srf.use( "register", regparser )
     this.options.srf.use( "register", this.reg )
