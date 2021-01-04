@@ -208,12 +208,12 @@ class Registrar {
   constructor( options ) {
     singleton = this
 
-    this.option = {
+    this.options = {
       "expires": 3600,
       "minexpires": 3600,
       "staletime": 300
     }
-    
+
     this.options = { ...this.options, ...options }
 
     this.options = options
