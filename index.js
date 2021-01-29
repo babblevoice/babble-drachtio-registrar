@@ -1,4 +1,3 @@
-
 'use strict'
 
 const assert = require( "assert" )
@@ -43,7 +42,7 @@ class reg {
     this.contact = req.registration.contact
     this.aor = req.registration.aor
     this.expires = req.registration.expires
-    if( undefined !== singleton.options.regping ) {
+    if ( undefined !== singleton.options.regping ) {
       this.expires = singleton.options.expires
     }
     this.authorization = user.authorization
@@ -51,7 +50,7 @@ class reg {
     this.registeredat = Math.floor( +new Date() / 1000 )
     this.ping = Math.floor( +new Date() / 1000 )
 
-    if( undefined !== singleton.options.optionsping ) {
+    if ( undefined !== singleton.options.optionsping ) {
       this.optionsintervaltimer = setInterval( this.pingoptions, singleton.options.optionsping * 1000, this )
     }
 
@@ -125,7 +124,7 @@ class reg {
         }
 
         req.on( "response", ( res ) => {
-          if( 200 == res.status ) {
+          if ( 200 == res.status ) {
             self.ping = Math.floor( +new Date() / 1000 )
           }
         } )
@@ -147,8 +146,8 @@ class user {
 
     let ci = req.get( "call-id" )
 
-    if( !this.registrations.has( ci ) ) {
-      if( 0 === req.registrar.expires ) return
+    if ( !this.registrations.has( ci ) ) {
+      if ( 0 === req.registrar.expires ) return
 
       // New
       let r = new reg( req, this )
@@ -156,7 +155,7 @@ class user {
       return r
     }
 
-    if( 0 === req.registrar.expires ) {
+    if ( 0 === req.registrar.expires ) {
       this.registrations.get( ci ).destroy()
       this.registrations.delete( ci )
       return
@@ -181,14 +180,14 @@ class domain {
   }
 
   reg( req ) {
-    if( !this.users.has( req.authorization.username ) ) {
+    if ( !this.users.has( req.authorization.username ) ) {
       this.users.set( req.authorization.username, new user( req.authorization ) )
     }
 
     let u = this.users.get( req.authorization.username )
     let r = u.reg( req )
 
-    if( 0 === u.registrations.size ) {
+    if ( 0 === u.registrations.size ) {
       this.users.delete( u.authorization.username )
     }
 
@@ -197,7 +196,11 @@ class domain {
 
   get info() {
     var ua = []
-    this.users.forEach( ( u ) => { u.registrations.forEach( ( r ) => { ua.push( r.info ) } ) } )
+    this.users.forEach( ( u ) => {
+      u.registrations.forEach( ( r ) => {
+        ua.push( r.info )
+      } )
+    } )
     return ua
   }
 }
@@ -214,13 +217,17 @@ class Registrar {
       "staletime": 300
     }
 
-    this.options = { ...this.options, ...options }
+    this.options = {
+      ...this.options,
+      ...options
+    }
 
     this.options = options
     this.domains = new Map()
 
     this.authdigest = digestauth( {
-      proxy: true, /* 407 or 401 */
+      proxy: true,
+      /* 407 or 401 */
       passwordLookup: options.passwordLookup
     } )
 
@@ -244,15 +251,17 @@ class Registrar {
     let reg = singleton.isauthed( parsedaor.host, parsedaor.user, req )
 
     /* Unreg */
-    if( 0 === req.registration.expires && reg ) {
+    if ( 0 === req.registration.expires && reg ) {
       reg.onexpire( reg )
     }
 
-    if( !reg || reg.expiring ) {
+    if ( !reg || reg.expiring ) {
       //console.log( "Requesting auth" )
       var authed = false
-      singleton.authdigest( req, res, () => { authed = true } )
-      if( !authed ) {
+      singleton.authdigest( req, res, () => {
+        authed = true
+      } )
+      if ( !authed ) {
         return
       }
 
@@ -260,44 +269,45 @@ class Registrar {
       req.registrar.useragent = req.get( "user-agent" )
       req.registrar.expires = req.registration.expires
 
-      if( undefined === singleton.options.regping &&
-          undefined !== singleton.options.minexpires &&
-          req.registrar.expires < singleton.options.minexpires &&
-          0 !== req.registrar.expires ) {
-            res.send( 423, { /* Interval too brief - can we pass this in as a config item? */
-              headers: {
-                "Contact": req.registrar.contact,
-                "Min-Expires": singleton.options.minexpires
-              }
-            } )
-            next()
-            return
+      if ( undefined === singleton.options.regping &&
+        undefined !== singleton.options.minexpires &&
+        req.registrar.expires < singleton.options.minexpires &&
+        0 !== req.registrar.expires ) {
+        res.send( 423, {
+          /* Interval too brief - can we pass this in as a config item? */
+          headers: {
+            "Contact": req.registrar.contact,
+            "Min-Expires": singleton.options.minexpires
+          }
+        } )
+        next()
+        return
       }
 
-      if( !singleton.domains.has( req.authorization.realm ) ) {
+      if ( !singleton.domains.has( req.authorization.realm ) ) {
         singleton.domains.set( req.authorization.realm, new domain() )
       }
 
       let d = singleton.domains.get( req.authorization.realm )
       let r = d.reg( req )
 
-      if( 0 == d.users.size ) {
+      if ( 0 == d.users.size ) {
         singleton.domains.delete( req.authorization.realm )
       }
 
-      if( r ) {
+      if ( r ) {
         singleton.em.emit( "register", r.info )
       }
-    } else if( reg ) {
+    } else if ( reg ) {
       reg.regping()
     }
 
-    if( undefined !== singleton.options.regping ) {
+    if ( undefined !== singleton.options.regping ) {
       res.send( 200, {
         headers: {
-              "Contact": req.get( "Contact" ).replace( /expires=\d+/, `expires=${singleton.options.regping}` ),
-              "Expires": singleton.options.regping
-            }
+          "Contact": req.get( "Contact" ).replace( /expires=\d+/, `expires=${singleton.options.regping}` ),
+          "Expires": singleton.options.regping
+        }
       } )
     } else {
       res.send( 200, {
@@ -313,22 +323,22 @@ class Registrar {
 
   isauthed( realm, user, req ) {
 
-    if( !this.domains.has( realm ) ) {
+    if ( !this.domains.has( realm ) ) {
       return false
     }
 
-    if( !this.domains.get( realm ).users.has( user ) ) {
+    if ( !this.domains.get( realm ).users.has( user ) ) {
       return false
     }
 
     let ci = req.get( "call-id" )
 
-    for ( const [ key, reg ] of this.domains.get( realm ).users.get( user ).registrations) {
-      if( req.source_address === reg.network.source_address &&
-          req.source_port === reg.network.source_port  &&
-          ci === reg.callid ) {
-            return reg
-          }
+    for ( const [ key, reg ] of this.domains.get( realm ).users.get( user ).registrations ) {
+      if ( req.source_address === reg.network.source_address &&
+        req.source_port === reg.network.source_port &&
+        ci === reg.callid ) {
+        return reg
+      }
     }
 
     return false
@@ -342,7 +352,7 @@ class Registrar {
     Get all the users and their registrations at a realm
   */
   users( realm ) {
-    if( !this.domains.has( realm ) ) {
+    if ( !this.domains.has( realm ) ) {
       return []
     }
     return this.domains.get( realm ).info
@@ -357,22 +367,24 @@ class Registrar {
   */
   user( realm, username ) {
 
-    if( undefined == username ) {
+    if ( undefined == username ) {
       let parsed = parseuri( realm )
       realm = parsed.host
       username = parsed.user
     }
 
-    if( !this.domains.has( realm ) ) {
+    if ( !this.domains.has( realm ) ) {
       return []
     }
 
-    if( !this.domains.get( realm ).users.has( username ) ) {
+    if ( !this.domains.get( realm ).users.has( username ) ) {
       return []
     }
 
     var ua = []
-    this.domains.get( realm ).users.get( username ).registrations.forEach( ( r ) => { ua.push( r.info ) } )
+    this.domains.get( realm ).users.get( username ).registrations.forEach( ( r ) => {
+      ua.push( r.info )
+    } )
     return ua
   }
 }
