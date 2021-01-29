@@ -2,7 +2,7 @@
 'use strict'
 
 const assert = require( "assert" )
-const events = require('events')
+const events = require( "events" )
 const digestauth = require( "drachtio-mw-digest-auth" )
 const regparser = require( "drachtio-mw-registration-parser" )
 const parseuri = require( "drachtio-srf" ).parseUri
