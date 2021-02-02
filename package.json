@@ -21,6 +21,6 @@
   "dependencies": {
     "drachtio-mw-digest-auth": "^0.3.3",
     "drachtio-mw-registration-parser": "^0.1.0",
-    "drachtio-srf": "^4.4.40"
+    "drachtio-srf": "^4.4.47"
   }
 }

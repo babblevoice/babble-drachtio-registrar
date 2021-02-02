@@ -37,7 +37,8 @@ class reg {
     this.network.source_address = req.source_address
     this.network.source_port = req.source_port
     this.network.protocol = req.protocol
-    this.useragent = req.registrar.useragent
+    this.useragent = undefined === req.registrar.useragent ? "" : req.registrar.useragent
+    this.allow = req.registrar.allow.toUpperCase().split( /[\s,]+/ )
     this.callid = req.get( "call-id" )
     this.contact = req.registration.contact
     this.aor = req.registration.aor
@@ -80,6 +81,7 @@ class reg {
       "authorization": this.authorization,
       "registeredat": this.registeredat,
       "useragent": this.useragent,
+      "allow": this.allow,
       "network": this.network,
       "expiresat": this.registeredat + this.expires,
       "expiresin": this.registeredat + this.expires - Math.floor( +new Date() / 1000 ),
@@ -255,6 +257,7 @@ class Registrar {
       reg.onexpire( reg )
     }
 
+    let r = false
     if ( !reg || reg.expiring ) {
       //console.log( "Requesting auth" )
       var authed = false
@@ -267,6 +270,12 @@ class Registrar {
 
       req.registrar.contact = req.get( "Contact" )
       req.registrar.useragent = req.get( "user-agent" )
+
+      req.registrar.allow = req.get( "allow" )
+      if( undefined === req.registrar.allow &&
+          undefined !== req.registration.contact[ 0 ].params.methods ) {
+        req.registrar.allow = req.registration.contact[ 0 ].params.methods.replace( /^\"|"$/g, "" )
+      }
       req.registrar.expires = req.registration.expires
 
       if ( undefined === singleton.options.regping &&
@@ -280,7 +289,6 @@ class Registrar {
             "Min-Expires": singleton.options.minexpires
           }
         } )
-        next()
         return
       }
 
@@ -289,14 +297,10 @@ class Registrar {
       }
 
       let d = singleton.domains.get( req.authorization.realm )
-      let r = d.reg( req )
+      r = d.reg( req )
 
       if ( 0 == d.users.size ) {
         singleton.domains.delete( req.authorization.realm )
-      }
-
-      if ( r ) {
-        singleton.em.emit( "register", r.info )
       }
     } else if ( reg ) {
       reg.regping()
@@ -318,7 +322,9 @@ class Registrar {
       } )
     }
 
-    next()
+    if ( false !== r && undefined !== r ) {
+      singleton.em.emit( "register", r.info )
+    }
   }
 
   isauthed( realm, user, req ) {
