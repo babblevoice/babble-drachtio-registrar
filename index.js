@@ -6,6 +6,8 @@ const digestauth = require( "drachtio-mw-digest-auth" )
 const regparser = require( "drachtio-mw-registration-parser" )
 const parseuri = require( "drachtio-srf" ).parseUri
 
+const { v4: uuidv4 } = require( "uuid" )
+
 
 /*
 Classes
@@ -33,6 +35,8 @@ r.user( realm, username )
 
 class reg {
   constructor( req, user ) {
+    this.uuid = uuidv4()
+    this.initial = true
     this.network = {}
     this.network.source_address = req.source_address
     this.network.source_port = req.source_port
@@ -74,6 +78,8 @@ class reg {
     } )
 
     return {
+      "uuid": this.uuid,
+      "initial": this.initial,
       "callid": this.callid,
       "contacts": contacts,
       "aor": this.aor,
@@ -89,11 +95,12 @@ class reg {
     }
   }
 
+  /* Called by our frame work on further packets */
   update() {
     clearTimeout( this.regexpiretimer )
     this.regexpiretimer = setTimeout( this.onexpire, this.expires * 1000, this )
-
     this.registeredat = Math.floor( +new Date() / 1000 )
+    this.initial = false
   }
 
   /* Called when we receive a register which we use instead of options ping */
