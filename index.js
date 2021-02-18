@@ -113,7 +113,7 @@ class reg {
   }
 
   destroy() {
-    singleton.em.emit( "unregister", this.info )
+    singleton.options.em.emit( "unregister", this.info )
     clearInterval( this.optionsintervaltimer )
     clearTimeout( this.regexpiretimer )
   }
@@ -243,11 +243,13 @@ class Registrar {
     this.options.srf.use( "register", regparser )
     this.options.srf.use( "register", this.reg )
 
-    this.em = new events.EventEmitter()
+    if( undefined === this.options.em ) {
+      this.options.em = new events.EventEmitter()
+    }
   }
 
   on( event, cb ) {
-    this.em.on( event, cb )
+    this.options.em.on( event, cb )
   }
 
   reg( req, res, next ) {
@@ -330,7 +332,7 @@ class Registrar {
     }
 
     if ( false !== r && undefined !== r ) {
-      singleton.em.emit( "register", r.info )
+      singleton.options.em.emit( "register", r.info )
     }
   }
 
