@@ -21,7 +21,7 @@ Our Registrar is our external interface. Srf handles calling us to register with
 provide an interface to query registrations.
 
 Usage:
-let r = new Registrar( { "srf": srf, "config": config, "passwordLookup": passwordLookup } )
+let r = new Registrar( { "srf": srf, "config": config, "userlookup": userlookup } )
 
 Get an array of domains with users registered to us, i.e. [ "bling.babblevoice.com" ]
 r.realms()
@@ -214,6 +214,24 @@ class domain {
   }
 }
 
+function sendok( req, res ) {
+  if ( undefined !== singleton.options.regping ) {
+    res.send( 200, {
+      headers: {
+        "Contact": req.get( "Contact" ).replace( /expires=\d+/, `expires=${singleton.options.regping}` ),
+        "Expires": singleton.options.regping
+      }
+    } )
+  } else {
+    res.send( 200, {
+      headers: {
+        "Contact": req.registrar.contact,
+        "Expires": req.registrar.expires
+      }
+    } )
+  }
+}
+
 var singleton
 class Registrar {
 
@@ -234,11 +252,6 @@ class Registrar {
     this.options = options
     this.domains = new Map()
 
-    this.authdigest = digestauth( {
-      proxy: true,
-      /* 407 or 401 */
-      passwordLookup: options.passwordLookup
-    } )
 
     this.options.srf.use( "register", regparser )
     this.options.srf.use( "register", this.reg )
@@ -269,70 +282,67 @@ class Registrar {
     let r = false
     if ( !reg || reg.expiring ) {
       //console.log( "Requesting auth" )
+
+      let toparts = parseuri( req.getParsedHeader( "To" ).uri )
       var authed = false
-      singleton.authdigest( req, res, () => {
-        authed = true
+      digestauth( {
+        "proxy": true, /* 407 or 401 */
+        "passwordLookup": ( username, realm, cb ) => {
+          singleton.options.userlookup( username, realm )
+            .then( ( u ) => {
+              cb( false, u.secret )
+            } )
+            .catch( () => {
+              cb( false, false )
+            } )
+        },
+        "realm": toparts.host
+      } )( req, res, () => {
+
+        /* User has been authed */
+        req.registrar.contact = req.get( "Contact" )
+        req.registrar.useragent = req.get( "user-agent" )
+
+        req.registrar.allow = req.get( "allow" )
+        if( undefined === req.registrar.allow &&
+            undefined !== req.registration.contact[ 0 ].params.methods ) {
+          req.registrar.allow = req.registration.contact[ 0 ].params.methods.replace( /^\"|"$/g, "" )
+        }
+        req.registrar.expires = req.registration.expires
+
+        if ( undefined === singleton.options.regping &&
+          undefined !== singleton.options.minexpires &&
+          req.registrar.expires < singleton.options.minexpires &&
+          0 !== req.registrar.expires ) {
+          res.send( 423, {
+            /* Interval too brief - can we pass this in as a config item? */
+            headers: {
+              "Contact": req.registrar.contact,
+              "Min-Expires": singleton.options.minexpires
+            }
+          } )
+          return
+        }
+
+        if ( !singleton.domains.has( req.authorization.realm ) ) {
+          singleton.domains.set( req.authorization.realm, new domain() )
+        }
+
+        let d = singleton.domains.get( req.authorization.realm )
+        r = d.reg( req )
+
+        if ( 0 == d.users.size ) {
+          singleton.domains.delete( req.authorization.realm )
+        }
+
+        sendok( req, res )
+        if ( false !== r && undefined !== r ) {
+          singleton.options.em.emit( "register", r.info )
+        }
       } )
-      if ( !authed ) {
-        return
-      }
-
-      req.registrar.contact = req.get( "Contact" )
-      req.registrar.useragent = req.get( "user-agent" )
-
-      req.registrar.allow = req.get( "allow" )
-      if( undefined === req.registrar.allow &&
-          undefined !== req.registration.contact[ 0 ].params.methods ) {
-        req.registrar.allow = req.registration.contact[ 0 ].params.methods.replace( /^\"|"$/g, "" )
-      }
-      req.registrar.expires = req.registration.expires
-
-      if ( undefined === singleton.options.regping &&
-        undefined !== singleton.options.minexpires &&
-        req.registrar.expires < singleton.options.minexpires &&
-        0 !== req.registrar.expires ) {
-        res.send( 423, {
-          /* Interval too brief - can we pass this in as a config item? */
-          headers: {
-            "Contact": req.registrar.contact,
-            "Min-Expires": singleton.options.minexpires
-          }
-        } )
-        return
-      }
-
-      if ( !singleton.domains.has( req.authorization.realm ) ) {
-        singleton.domains.set( req.authorization.realm, new domain() )
-      }
-
-      let d = singleton.domains.get( req.authorization.realm )
-      r = d.reg( req )
-
-      if ( 0 == d.users.size ) {
-        singleton.domains.delete( req.authorization.realm )
-      }
     } else if ( reg ) {
       reg.regping()
-    }
-
-    if ( undefined !== singleton.options.regping ) {
-      res.send( 200, {
-        headers: {
-          "Contact": req.get( "Contact" ).replace( /expires=\d+/, `expires=${singleton.options.regping}` ),
-          "Expires": singleton.options.regping
-        }
-      } )
-    } else {
-      res.send( 200, {
-        headers: {
-          "Contact": req.registrar.contact,
-          "Expires": req.registrar.expires
-        }
-      } )
-    }
-
-    if ( false !== r && undefined !== r ) {
-      singleton.options.em.emit( "register", r.info )
+      sendok( req, res )
     }
   }
 
