@@ -127,7 +127,7 @@ class reg {
         }
       }, ( err, req ) => {
         if ( err ) {
-          //console.log( `Error sending OPTIONS: ${err}` )
+          singleton.consolelog( `Error sending OPTIONS: ${err}` )
           return
         }
 
@@ -171,8 +171,9 @@ class user {
 
     let r = this.registrations.get( ci )
     r.update()
+
+    singleton.consolelog( `${this.registrations.size} of registrations for user ${this.authorization.username}` )
     return r
-    //console.log( `${this.registrations.size} of registrations for user ${this.authorization.username}` )
   }
 
   remove( r ) {
@@ -237,10 +238,12 @@ class Registrar {
   constructor( options ) {
     singleton = this
 
+    /* Our default options */
     this.options = {
       "expires": 3600,
       "minexpires": 3600,
-      "staletime": 300
+      "staletime": 300,
+      "debug": false
     }
 
     this.options = {
@@ -248,15 +251,21 @@ class Registrar {
       ...options
     }
 
-    this.options = options
     this.domains = new Map()
-
 
     this.options.srf.use( "register", regparser )
     this.options.srf.use( "register", this.reg )
 
     if( undefined === this.options.em ) {
       this.options.em = new events.EventEmitter()
+    }
+
+    if( this.options.debug ) {
+      this.consolelog = ( m ) => {
+        console.log( "Registrar: " + m )
+      }
+    } else {
+      this.consolelog = ( m ) => {}
     }
   }
 
@@ -281,8 +290,10 @@ class Registrar {
     let r = false
     if ( !reg || reg.expiring ) {
       //console.log( "Requesting auth" )
+      let uri = req.getParsedHeader( "To" ).uri
+      singleton.consolelog( `Requesting auth for ${uri}` )
 
-      let toparts = parseuri( req.getParsedHeader( "To" ).uri )
+      let toparts = parseuri( uri )
       var authed = false
       digestauth( {
         "proxy": true, /* 407 or 401 */
