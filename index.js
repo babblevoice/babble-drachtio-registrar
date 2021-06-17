@@ -388,8 +388,10 @@ class Registrar {
     user( "bling.babblevoice.com", "1000" )
     or
     user( "sip:1000@bling.babblevoice.com" )
+
+    Change to async for future devel to store regs in redis or similar
   */
-  user( realm, username ) {
+  async user( realm, username ) {
 
     if ( undefined == username ) {
       let parsed = parseuri( realm )
