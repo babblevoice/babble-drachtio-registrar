@@ -426,4 +426,10 @@ class Registrar {
   }
 }
 
-module.exports = Registrar
+/*
+  Export according to environment
+*/
+
+module.exports = process.env.NODE_ENV == "test"
+  ? { reg, user, domain, sendok, Registrar }
+  : Registrar
