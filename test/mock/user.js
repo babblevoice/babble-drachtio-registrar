@@ -5,6 +5,12 @@
 
 class user {
 
+  static defaultMethods = {
+
+    reg: function() {},
+    remove: function() {}
+  }
+
   static defaultValues = {
 
     registrations: new Map(),
@@ -19,22 +25,26 @@ class user {
     })
   }
 
-  reg = () => {}
+  reg() {}
 
-  remove = () => {}
+  remove() {}
 
-  static update = function( newValues ) {
-    const keys = Object.keys( user.values )
-    for( let key in newValues ) {
+  static update = function( newSettings ) {
+    const keysProto = Object.getOwnPropertyNames( user.prototype )
+    const keysValue = Object.keys( user.values )
+    const keys = [ ...keysProto, ...keysValue ]
+    for( let key in newSettings ) {
       if( keys.includes( key ) ) {
-        user.values[ key ] = newValues[ key ]
+        if( keysProto.includes( key ) ) user.prototype[ key ] = newSettings[ key ]
+        if( keysValue.includes( key ) ) user.values[ key ] = newSettings[ key ]
       }
     }
   }
 
-  static init = function( initialValues ) {
+  static init = function( initialSettings ) {
+    user.update( user.defaultMethods )
     user.update( user.defaultValues )
-    user.update( initialValues )
+    user.update( initialSettings )
     return new user()
   }
 }

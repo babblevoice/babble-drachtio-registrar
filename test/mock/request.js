@@ -43,7 +43,7 @@ class Request {
       allow: "some _,allow" // babble-drachtio-registrar reg class constructor splits on \s or ,
     },
     registration: {
-      contact: "some_contact",
+      contact: [ { uri: "some_uri" }, { uri: "some_uri" } ],
       aor: "some_aor",
       expires: 1
     }
