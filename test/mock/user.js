@@ -13,13 +13,18 @@ class user {
 
   static defaultValues = {
 
-    registrations: new Map(),
-    authorization: "some_authorization"
+    authorization: {
+      username: "some_username"
+    }
   }
 
   static values = user.defaultValues
 
-  constructor() {
+  constructor( authorization ) {
+
+    this.authorization = authorization || user.values.authorization
+    this.registrations = new Map()
+
     Object.keys( user.values ).forEach( key => {
       this[ key ] = user.values[ key ]
     })
@@ -30,9 +35,12 @@ class user {
   remove() {}
 
   static update = function( newSettings ) {
+
     const keysProto = Object.getOwnPropertyNames( user.prototype )
     const keysValue = Object.keys( user.values )
+
     const keys = [ ...keysProto, ...keysValue ]
+
     for( let key in newSettings ) {
       if( keys.includes( key ) ) {
         if( keysProto.includes( key ) ) user.prototype[ key ] = newSettings[ key ]
@@ -42,10 +50,12 @@ class user {
   }
 
   static init = function( initialSettings ) {
+
     user.update( user.defaultMethods )
     user.update( user.defaultValues )
     user.update( initialSettings )
-    return new user()
+
+    return new user( initialSettings?.authorization || {} )
   }
 }
 

@@ -38,9 +38,13 @@ class Request {
     type: "request",
     uri: "", // Request only
 
+    authorization: {
+      username: "some_username"
+    },
     registrar: {
       useragent: "some_useragent",
-      allow: "some _,allow" // babble-drachtio-registrar reg class constructor splits on \s or ,
+      allow: "some _,allow", // babble-drachtio-registrar reg class constructor splits on \s or ,
+      expires: 1
     },
     registration: {
       contact: [ { uri: "some_uri" }, { uri: "some_uri" } ],
@@ -52,13 +56,16 @@ class Request {
   static values = Request.defaultValues
 
   constructor() {
+
     Object.keys( Request.values ).forEach( key => {
       this[ key ] = Request.values[ key ]
     })
   }
 
   static update = function( newValues ) {
+
     const keys = Object.keys( Request.values )
+
     for( let key in newValues ) {
       if( keys.includes( key ) ) {
         Request.values[ key ] = newValues[ key ]
@@ -67,8 +74,10 @@ class Request {
   }
 
   static init = function( initialValues ) {
+
     Request.update( Request.defaultValues )
     Request.update( initialValues )
+
     return new Request()
   }
 }

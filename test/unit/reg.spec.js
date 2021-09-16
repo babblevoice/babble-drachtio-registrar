@@ -1,22 +1,32 @@
+/*
+  Dependencies
+*/
 
 const { EventEmitter } = require( "events" )
+const uuid = require( "uuid" )
 
 const should = require( "chai" ).should()
-const uuid = require( "uuid" )
 
 const Request = require( "../mock/request.js" )
 const user = require( "../mock/user.js" )
 
-/* Initialize singleton for reg instantiation */
 const { setSingleton } = require( "../../lib/singleton.js" )
+const reg = require( "../../lib/reg.js" )
+
+/* Initialize singleton for reg instantiations */
 setSingleton( { options: { regping: undefined, srf: { use: () => {} } } } )
 
-const reg = require( "../../lib/reg.js" )
+/*
+  Utilities
+*/
 
 const clearTimer = function( instance ) {
   clearTimeout( instance.regexpiretimer )
 }
 
+/*
+  Assertions
+*/
 
 describe( "reg.js", function() {
 
@@ -60,7 +70,7 @@ describe( "reg.js", function() {
         { name: "contact", calculated: JSON.stringify( r.contact ), expected: "[{\"uri\":\"some_uri\"},{\"uri\":\"some_uri\"}]" },
         { name: "aor", expected: "some_aor" },
         { name: "expires", expected: 1 },
-        { name: "authorization", expected: "some_authorization" },
+        { name: "authorization", calculated: JSON.stringify( r.authorization ), expected: "{\"username\":\"some_username\"}" },
         { name: "user", expected: someUser },
         { name: "registeredat", expected: dateOver1000Floored },
         { name: "ping", expected: dateOver1000Floored },
@@ -148,7 +158,7 @@ describe( "reg.js", function() {
 
         setSingleton( { options: {} } )
 
-        const r = new reg( Request.init(), user.init() ) // see Request.defaultValues for contact
+        const r = new reg( Request.init(), user.init() ) // see Request.defaultValues for contact value
 
         r.info.contacts.should.eql( [ "some_uri", "some_uri" ] ) // eql for deep equality
 
@@ -196,7 +206,7 @@ describe( "reg.js", function() {
         const r = new reg( Request.init(), user.init() )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
-        const expiresin = dateOver1000Floored + 1 - dateOver1000Floored // see Request.defaultValues for expires
+        const expiresin = dateOver1000Floored + 1 - dateOver1000Floored // see Request.defaultValues for expires value
 
         r.info.expiresin.should.equal( expiresin )
 
