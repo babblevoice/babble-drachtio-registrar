@@ -16,7 +16,7 @@ class Request {
       cf. https://drachtio.org/api#sip-message
     */
 
-    get: () => {},
+    get: function( header ) { return this.headers[ header ] },
     getParsedHeader: () => {},
     has: () => {},
 
@@ -44,12 +44,17 @@ class Request {
     registrar: {
       useragent: "some_useragent",
       allow: "some _,allow", // babble-drachtio-registrar reg class constructor splits on \s or ,
+      contact: "expires=1",
       expires: 1
     },
     registration: {
       contact: [ { uri: "some_uri" }, { uri: "some_uri" } ],
       aor: "some_aor",
       expires: 1
+    },
+    headers: {
+      "call-id": "some_call-id",
+      "Contact": "expires=1"
     }
   }
 

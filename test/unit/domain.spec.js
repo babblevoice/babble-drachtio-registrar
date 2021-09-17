@@ -19,7 +19,8 @@ describe( "domain.js", function() {
   it( "exports the domain class", function() {
 
     domain.name.should.equal( "domain" )
-  
+    String( domain ).slice( 0, 5 ).should.equal( "class" )
+
   } )
   
   describe( "domain (class)", function() {
@@ -54,8 +55,10 @@ describe( "domain.js", function() {
 
         d.reg( Request.init(), user ) // see Request.defaultValues for username value
 
-        d.users.has( Request.defaultValues.authorization.username ).should.equal( true )
-        d.users.get( Request.defaultValues.authorization.username ).should.be.an.instanceof( user )
+        const username = Request.defaultValues.authorization.username
+
+        d.users.has( username ).should.equal( true )
+        d.users.get( username ).should.be.an.instanceof( user )
 
       } )
 
@@ -65,7 +68,9 @@ describe( "domain.js", function() {
 
         d.reg( Request.init(), user.init() && user ) // see Request.defaultValues for username value
 
-        d.users.has( Request.defaultValues.authorization.username ).should.equal( false )
+        const username = Request.defaultValues.authorization.username
+
+        d.users.has( username ).should.equal( false )
 
       } )
 
@@ -85,11 +90,7 @@ describe( "domain.js", function() {
 
         user.init( { reg: req => { if( 0 === req.registrar.expires ) return } } )
 
-        const retVal = d.reg( Request.init( { registrar: {
-          useragent: "some_useragent",
-          allow: "some _,allow", // babble-drachtio-registrar reg class constructor splits on \s or ,
-          expires: 1
-        } } ), user )
+        const retVal = d.reg( Request.init(), user )
 
         should.equal( retVal, undefined )
 
@@ -102,6 +103,35 @@ describe( "domain.js", function() {
         user.init( { reg: req => 0 != req.registrar.expires && reg.init() } )
 
         d.reg( Request.init(), user ).should.be.an.instanceof( reg )
+
+      } )
+    } )
+
+    describe( "get info", function() {
+
+      it( "returns an array containing info for each registration for each user on the users property", function() {
+
+        const d = new domain()
+
+        const info = function() { return { some_key: "some_value" } }
+
+        const u1 = user.init()
+        const r1 = reg.init( { info } )
+
+        const u2 = user.init()
+        const r2 = reg.init( { info } )
+
+        u1.registrations.set( "some_call-id1", r1 )
+        d.users.set( "some_username1", u1 )
+
+        u2.registrations.set( "some_call-id2", r2 )
+        d.users.set( "some_username2", u2 )
+
+        const ua = d.info
+
+        ua.should.be.an( "array" )
+        ua[ 0 ].should.eql( r1.info ) // eql for deep equality
+        ua[ 1 ].should.eql( r2.info )
 
       } )
     } )

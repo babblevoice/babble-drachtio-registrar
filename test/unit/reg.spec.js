@@ -33,6 +33,7 @@ describe( "reg.js", function() {
   it( "exports the reg class", function() {
 
     reg.name.should.equal( "reg" )
+    String( reg ).slice( 0, 5 ).should.equal( "class" )
 
   } )
 
@@ -55,7 +56,7 @@ describe( "reg.js", function() {
       setSingleton( { options: {} } )
 
       const someUser = user.init()
-      const r = new reg( Request.init( { get: header => "some_" + header } ), someUser )
+      const r = new reg( Request.init( {} ), someUser )
 
       const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
@@ -331,7 +332,7 @@ describe( "reg.js", function() {
         const r = new reg( Request.init(), user.init() )
 
         em.on( "unregister", function( info ) {
-          info.should.eql( r.info )
+          info.should.eql( r.info ) // eql for deep equality
           done()
         } )
 
@@ -371,7 +372,7 @@ describe( "reg.js", function() {
         const runShould = ( uri, obj, cb ) => {
           uri.should.equal( "some_uri" )
           obj.method.should.equal( "OPTIONS" )
-          obj.headers.should.eql( { "Subject": "OPTIONS Ping" } )
+          obj.headers.should.eql( { "Subject": "OPTIONS Ping" } ) // eql for deep equality
           cb.should.be.a( "function" )
         }
 

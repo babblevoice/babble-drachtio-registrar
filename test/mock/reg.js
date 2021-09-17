@@ -6,18 +6,25 @@
 const { v4: uuidv4 } = require( "uuid" )
 
 const { getSingleton } = require( "../../lib/singleton.js" )
+const { prototype } = require("./request.js")
 
 
 class reg {
 
   static defaultMethods = {
 
-    // get expired, get expiring, get info
     update: function() {},
     regping: function() {},
     onexpire: function() {},
     destroy: function() {},
     pingoptions: function() {}
+  }
+
+  static defaultGetters = {
+
+    expired: function() {},
+    expiring: function() {},
+    info: function() {}
   }
 
   static defaultValues = {
@@ -53,11 +60,11 @@ class reg {
     if ( undefined !== singleton?.options?.regping ) {
       this.expires = singleton?.options?.expires || 1
     }
-    this.authorization = user.authorization || { username: "some_username" }
+    this.authorization = user?.authorization || { username: "some_username" }
     this.user = user || {}
     this.registeredat = Math.floor( +new Date() / 1000 )
     this.ping = Math.floor( +new Date() / 1000 )
-    if ( undefined !== singleton.options.optionsping ) {
+    if ( undefined !== singleton?.options?.optionsping ) {
       this.optionsintervaltimer = setInterval( this.pingoptions, singleton.options.optionsping * 1000, this )
     }
 
@@ -80,15 +87,24 @@ class reg {
 
   pingoptions() {}
 
-  static update = function( newSettings ) {
+  static update = function( newSettings, obj = reg ) {
 
     const keysProto = Object.getOwnPropertyNames( reg.prototype )
+    const keysGetter = Object.keys( reg.defaultGetters )
     const keysValue = Object.keys( reg.values )
 
     const keys = [ ...keysProto, ...keysValue ]
 
     for( let key in newSettings ) {
       if( keys.includes( key ) ) {
+        
+        if( keysGetter.includes( key ) ) {
+          Object.defineProperty( obj, key, {
+            get: newSettings[ key ],
+            configurable: true
+          } )
+          continue
+        }
         if( keysProto.includes( key ) ) reg.prototype[ key ] = newSettings[ key ]
         if( keysValue.includes( key ) ) reg.values[ key ] = newSettings[ key ]
       }
@@ -99,9 +115,13 @@ class reg {
 
     reg.update( reg.defaultMethods )
     reg.update( reg.defaultValues )
+
     reg.update( initialSettings )
 
-    return new reg( initialSettings?.req || {}, initialSettings?.user || {} )
+    const r = new reg( initialSettings?.req || {}, initialSettings?.user || {} )
+    reg.update( initialSettings, r ) // for getters
+
+    return r
   }
 }
 
