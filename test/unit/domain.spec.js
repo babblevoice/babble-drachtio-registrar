@@ -6,9 +6,9 @@ const should = require( "chai" ).should()
 
 const Request = require( "../mock/request.js" )
 const user = require( "../mock/user.js" )
-const reg = require( "../mock/reg.js" )
 
 const domain = require( "../../lib/domain.js" )
+const reg = require( "../../lib/reg.js" )
 const { getSingleton } = require("../../lib/singleton.js")
 
 /*
@@ -101,7 +101,7 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => 0 != req.registrar.expires && reg.init() } )
+        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init() ) } )
 
         d.reg( Request.init(), {}, user ).should.be.an.instanceof( reg )
 
@@ -117,10 +117,10 @@ describe( "domain.js", function() {
         const info = function() { return { some_key: "some_value" } }
 
         const u1 = user.init()
-        const r1 = reg.init( { info } )
+        const r1 = new reg( Request.init(), user.init() )
 
         const u2 = user.init()
-        const r2 = reg.init( { info } )
+        const r2 = new reg( Request.init(), user.init() )
 
         u1.registrations.set( "some_call-id1", r1 )
         d.users.set( "some_username1", u1 )

@@ -74,6 +74,8 @@ class Request {
     for( let key in newValues ) {
       if( keys.includes( key ) ) {
         Request.values[ key ] = newValues[ key ]
+
+        if( typeof key === "object" ) Request.update( newValues[ key ] )
       }
     }
   }
