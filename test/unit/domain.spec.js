@@ -9,6 +9,7 @@ const user = require( "../mock/user.js" )
 const reg = require( "../mock/reg.js" )
 
 const domain = require( "../../lib/domain.js" )
+const { getSingleton } = require("../../lib/singleton.js")
 
 /*
   Assertions
@@ -53,7 +54,7 @@ describe( "domain.js", function() {
 
         user.init( { reg: function() { this.registrations.set( "some_callid", {} ) } } ) // prevents immediate deletion in domain.reg
 
-        d.reg( Request.init(), user ) // see Request.defaultValues for username value
+        d.reg( Request.init(), {}, user ) // see Request.defaultValues for username value
 
         const username = Request.defaultValues.authorization.username
 
@@ -66,7 +67,7 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        d.reg( Request.init(), user.init() && user ) // see Request.defaultValues for username value
+        d.reg( Request.init(), {}, user.init() && user ) // see Request.defaultValues for username value
 
         const username = Request.defaultValues.authorization.username
 
@@ -74,13 +75,13 @@ describe( "domain.js", function() {
 
       } )
 
-      it( "calls the user reg method passing the request", function() {
+      it( "calls the user reg method passing the request and the singleton", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => req instanceof Request } )
+        user.init( { reg: ( req, singleton ) => req instanceof Request && singleton === getSingleton() } )
 
-        d.reg( Request.init(), user ).should.equal( true )
+        d.reg( Request.init(), getSingleton(), user ).should.equal( true )
 
       } )
 
@@ -90,7 +91,7 @@ describe( "domain.js", function() {
 
         user.init( { reg: req => { if( 0 === req.registrar.expires ) return } } )
 
-        const retVal = d.reg( Request.init(), user )
+        const retVal = d.reg( Request.init(), {}, user )
 
         should.equal( retVal, undefined )
 
@@ -102,7 +103,7 @@ describe( "domain.js", function() {
 
         user.init( { reg: req => 0 != req.registrar.expires && reg.init() } )
 
-        d.reg( Request.init(), user ).should.be.an.instanceof( reg )
+        d.reg( Request.init(), {}, user ).should.be.an.instanceof( reg )
 
       } )
     } )

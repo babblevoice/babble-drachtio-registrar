@@ -6,7 +6,7 @@ const should = require( "chai" ).should()
 
 const Request = require( "../mock/request.js" )
 
-const { setSingleton } = require( "../../lib/singleton.js" )
+const { getSingleton, setSingleton } = require( "../../lib/singleton.js" )
 const sendok = require( "../../lib/sendok.js" )
 
 /*
@@ -28,13 +28,13 @@ describe( "sendok.js", function() {
 
       setSingleton( { options: { regping: 2 } } )
 
-      const intercept = ( status, options ) => { 
+      const intercept = ( status, options ) => {
           status.should.equal( 200 )
           options.headers.Contact.should.equal( "expires=2" )
           options.headers.Expires.should.equal( 2 )
       }
 
-      sendok( Request.init(), { send: intercept } ) // 1
+      sendok( Request.init(), { send: intercept }, getSingleton().options ) // 1
 
     } )
 
@@ -48,7 +48,7 @@ describe( "sendok.js", function() {
         options.headers.Expires.should.equal( 1 )
       }
 
-      sendok( Request.init(), { send: intercept } )
+      sendok( Request.init(), { send: intercept }, getSingleton().options )
 
     } )
   } )
