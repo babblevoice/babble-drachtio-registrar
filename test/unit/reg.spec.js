@@ -306,12 +306,12 @@ describe( "reg.js", function() {
 
         setSingleton( { options: {} } )
 
-        const runShould = function( self ) { self.should.equal( r ) }
+        const runShould = function( ci ) { ci.should.equal( r.callid ) }
 
         let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
 
-        const intercept = self => {
-          if( !hasAsserted ) { hasAsserted = true; runShould( self ); clearTimer( r ); done() }
+        const intercept = ci => {
+          if( !hasAsserted ) { hasAsserted = true; runShould( ci ); clearTimer( r ); done() }
         }
 
         const r = new reg( Request.init(), user.init( { remove: intercept } ) )
