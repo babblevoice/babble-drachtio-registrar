@@ -101,26 +101,26 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init() ) } )
+        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init(), getSingleton() ) } )
 
         d.reg( Request.init(), {}, user ).should.be.an.instanceof( reg )
 
       } )
     } )
 
-    describe( "get info", function() {
+    describe( "getinfo", function() {
 
       it( "returns an array containing info for each registration for each user on the users property", function() {
 
         const d = new domain()
 
-        const info = function() { return { some_key: "some_value" } }
+        //const getinfo = function() { return { some_key: "some_value" } }
 
         const u1 = user.init()
-        const r1 = new reg( Request.init(), user.init() )
+        const r1 = new reg( Request.init(), user.init(), getSingleton() )
 
         const u2 = user.init()
-        const r2 = new reg( Request.init(), user.init() )
+        const r2 = new reg( Request.init(), user.init(), getSingleton() )
 
         u1.registrations.set( "some_call-id1", r1 )
         d.users.set( "some_username1", u1 )
@@ -128,11 +128,11 @@ describe( "domain.js", function() {
         u2.registrations.set( "some_call-id2", r2 )
         d.users.set( "some_username2", u2 )
 
-        const ua = d.info
+        const ua = d.getinfo( getSingleton().options )
 
         ua.should.be.an( "array" )
-        ua[ 0 ].should.eql( r1.info ) // eql for deep equality
-        ua[ 1 ].should.eql( r2.info )
+        ua[ 0 ].should.eql( r1.getinfo( getSingleton().options ) ) // eql for deep equality
+        ua[ 1 ].should.eql( r2.getinfo( getSingleton().options ) )
 
       } )
     } )
