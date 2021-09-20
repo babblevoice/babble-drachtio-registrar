@@ -10,11 +10,7 @@ const should = require( "chai" ).should()
 const Request = require( "../mock/request.js" )
 const user = require( "../mock/user.js" )
 
-const { setsingleton, getsingleton } = require( "../../lib/registrar.js" )
 const reg = require( "../../lib/reg.js" )
-
-/* Initialize singleton for reg instantiations */
-setsingleton( { options: { regping: undefined, srf: { use: () => {} } } } )
 
 /*
   Utilities
@@ -41,9 +37,9 @@ describe( "reg.js", function() {
 
     it( "returns an instance of itself when called with the new keyword", function() {
 
-      setsingleton( { options: {} } )
+      registrar = { options: {} }
 
-      const r = new reg( Request.init(), user.init(), getsingleton() )
+      const r = new reg( Request.init(), user.init(), registrar )
 
       r.should.be.an.instanceof( reg )
 
@@ -53,10 +49,10 @@ describe( "reg.js", function() {
 
     describe( "constructor", function() {
 
-      setsingleton( { options: {} } )
+      registrar = { options: {} }
 
       const someUser = user.init()
-      const r = new reg( Request.init( {} ), someUser, getsingleton() )
+      const r = new reg( Request.init( {} ), someUser, registrar )
 
       const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
@@ -93,11 +89,11 @@ describe( "reg.js", function() {
       } )
     } )
 
-      it( "sets the expires property to the singleton expires option if present", function() {
+      it( "sets the expires property to the registrar expires option if present", function() {
 
-        setsingleton( { options: { regping: () => {}, expires: 2 } } )
+        registrar = { options: { regping: () => {}, expires: 2 } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() ) // 1
+        const r = new reg( Request.init(), user.init(), registrar ) // 1
 
         r.expires.should.equal( 2 )
 
@@ -111,9 +107,9 @@ describe( "reg.js", function() {
 
         const expires = 2
 
-        setsingleton( { options: { regping: () => {}, expires } } )
+        registrar = { options: { regping: () => {}, expires } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() ) // 1
+        const r = new reg( Request.init(), user.init(), registrar ) // 1
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const registeredat = dateOver1000Floored
@@ -135,9 +131,9 @@ describe( "reg.js", function() {
 
         const expires = 2
 
-        setsingleton( { options: { regping: () => {}, expires } } )
+        registrar = { options: { regping: () => {}, expires } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() ) // 1
+        const r = new reg( Request.init(), user.init(), registrar ) // 1
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const registeredat = dateOver1000Floored
@@ -157,11 +153,11 @@ describe( "reg.js", function() {
 
       it( "returns the contact URIs mapped to an array", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() ) // see Request.defaultValues for contact value
+        const r = new reg( Request.init(), user.init(), registrar ) // see Request.defaultValues for contact value
 
-        r.getinfo( getsingleton().options ).contacts.should.eql( [ "some_uri", "some_uri" ] ) // eql for deep equality
+        r.getinfo( registrar.options ).contacts.should.eql( [ "some_uri", "some_uri" ] ) // eql for deep equality
 
         clearTimer( r )
 
@@ -169,15 +165,15 @@ describe( "reg.js", function() {
 
       it( "returns the uuid, initial, callid, aor, expires, authorization, registeredat, useragent, allow and network properties", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const testValues = [ "uuid", "initial", "callid", "aor", "expires", "authorization", "registeredat", "useragent", "allow", "network" ]
 
         testValues.forEach( testValue => {
 
-          r.getinfo( getsingleton().options )[ testValue ].should.equal( r[ testValue ] )
+          r.getinfo( registrar.options )[ testValue ].should.equal( r[ testValue ] )
 
         } )
 
@@ -187,14 +183,14 @@ describe( "reg.js", function() {
 
       it( "returns an expiresat property being the sum of the registeredat and expires properties", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const expiresat = dateOver1000Floored + 1 // per Request.defaultValues
 
-        r.getinfo( getsingleton().options ).expiresat.should.equal( expiresat )
+        r.getinfo( registrar.options ).expiresat.should.equal( expiresat )
 
         clearTimer( r )
 
@@ -202,30 +198,30 @@ describe( "reg.js", function() {
 
       it( "returns an expiresin property being the sum of the registeredat and expires properties minus the current JavaScript date in seconds rounded down", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const expiresin = dateOver1000Floored + 1 - dateOver1000Floored // see Request.defaultValues for expires value
 
-        r.getinfo( getsingleton().options ).expiresin.should.equal( expiresin )
+        r.getinfo( registrar.options ).expiresin.should.equal( expiresin )
 
         clearTimer( r )
 
       } )
 
-      it( "returns a stale property being a boolean generated with the ping and singleton options staletime properties", function() {
+      it( "returns a stale property being a boolean generated with the ping and registrar options staletime properties", function() {
 
-        setsingleton( { options: { staletime: 1 } } )
+        registrar = { options: { staletime: 1 } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const stale = dateOver1000Floored < dateOver1000Floored - 1 // ping is JavaScript date in seconds rounded down
 
-        r.getinfo( getsingleton().options ).stale.should.be.an( "boolean" )
-        r.getinfo( getsingleton().options ).stale.should.equal( stale )
+        r.getinfo( registrar.options ).stale.should.be.an( "boolean" )
+        r.getinfo( registrar.options ).stale.should.equal( stale )
 
         clearTimer( r )
 
@@ -236,9 +232,9 @@ describe( "reg.js", function() {
 
       it( "resets the regexpiretimer property", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const regexpiretimer = r.regexpiretimer
 
@@ -252,9 +248,9 @@ describe( "reg.js", function() {
 
       it( "resets the registeredat property", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
@@ -268,9 +264,9 @@ describe( "reg.js", function() {
 
       it( "sets the initial property to false", function() {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         r.update()
 
@@ -285,9 +281,9 @@ describe( "reg.js", function() {
 
       it( "resets the ping property", function( done ) {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         const ping = r.ping
 
@@ -304,7 +300,7 @@ describe( "reg.js", function() {
 
       it( "calls the user property remove method passing the instance as an argument", function( done ) {
 
-        setsingleton( { options: {} } )
+        registrar = { options: {} }
 
         const runShould = function( ci ) { ci.should.equal( r.callid ) }
 
@@ -314,7 +310,7 @@ describe( "reg.js", function() {
           if( !hasAsserted ) { hasAsserted = true; runShould( ci ); clearTimer( r ); done() }
         }
 
-        const r = new reg( Request.init(), user.init( { remove: intercept } ), getsingleton() )
+        const r = new reg( Request.init(), user.init( { remove: intercept } ), registrar )
 
         r.onexpire( r )
 
@@ -327,26 +323,26 @@ describe( "reg.js", function() {
 
         const em = new EventEmitter()
 
-        setsingleton( { options: { em } } )
+        registrar = { options: { em } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
         em.on( "unregister", function( info ) {
-          info.should.eql( r.getinfo( getsingleton().options ) ) // eql for deep equality
+          info.should.eql( r.getinfo( registrar.options ) ) // eql for deep equality
           done()
         } )
 
-        r.destroy( getsingleton().options )
+        r.destroy( registrar.options )
 
       } )
 
       it( "clears the optionsintervaltimer property", function() {
 
-        setsingleton( { options: { em: { emit: () => {} }, optionsping: 1 } } )
+        registrar = { options: { em: { emit: () => {} }, optionsping: 1 } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
-        r.destroy( getsingleton().options )
+        r.destroy( registrar.options )
 
         r.optionsintervaltimer._destroyed.should.equal( true )
 
@@ -354,11 +350,11 @@ describe( "reg.js", function() {
 
       it( "clears the regexpiretimer property", function() {
 
-        setsingleton( { options: { em: { emit: () => {} } } } )
+        registrar = { options: { em: { emit: () => {} } } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
-        r.destroy( getsingleton().options )
+        r.destroy( registrar.options )
 
         r.regexpiretimer._destroyed.should.equal( true )
 
@@ -382,29 +378,30 @@ describe( "reg.js", function() {
           if( !hasAsserted ) { hasAsserted = true; runShould( uri, obj, cb ); clearTimer( r ); done() }
         }
 
-        setsingleton( { options: { srf: { request: ( uri, obj, cb ) => { intercept( uri, obj, cb ) } } } } )
+        registrar = { options: { srf: { request: ( uri, obj, cb ) => { intercept( uri, obj, cb ) } } } }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
-        r.pingoptions( { contact: [ { uri: "some_uri" }, { uri: "some_uri" } ] }, getsingleton() )
+        r.pingoptions( { contact: [ { uri: "some_uri" }, { uri: "some_uri" } ] }, registrar )
 
       } )
 
-      it( "calls the singleton consolelog property with an error message on SRF request error", function( done ) {
+      it( "calls the registrar consolelog property with an error message on SRF request error", function( done ) {
 
         const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
 
         const intercept = msg2 => { runShould( msg2 ); clearTimer( r ); done() }
 
-        setsingleton( {
+        registrar = {
           options: {
-            srf: { request: ( uri, obj, cb ) => { cb( "msg1" ) } } },
-            consolelog: intercept
-          } )
+            srf: { request: ( uri, obj, cb ) => { cb( "msg1" ) } }
+          },
+          consolelog: intercept
+        }
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
-        r.pingoptions( { contact: [ { uri: "some_uri" } ] }, getsingleton() )
+        r.pingoptions( { contact: [ { uri: "some_uri" } ] }, registrar )
 
       } )
 
@@ -412,7 +409,7 @@ describe( "reg.js", function() {
 
         const em = new EventEmitter()
 
-        setsingleton( {
+        registrar = {
           options: {
             srf: {
               request: ( uri, obj, cb ) => {
@@ -421,7 +418,7 @@ describe( "reg.js", function() {
               }
             }
           }
-        } )
+        }
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
@@ -430,9 +427,9 @@ describe( "reg.js", function() {
           done()
         } )
 
-        const r = new reg( Request.init(), user.init(), getsingleton() )
+        const r = new reg( Request.init(), user.init(), registrar )
 
-        r.pingoptions( { contact: [ { uri: "some_uri" } ] }, getsingleton() )
+        r.pingoptions( { contact: [ { uri: "some_uri" } ] }, registrar )
 
       } )
     } )
