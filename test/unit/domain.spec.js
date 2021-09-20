@@ -9,7 +9,7 @@ const user = require( "../mock/user.js" )
 
 const domain = require( "../../lib/domain.js" )
 const reg = require( "../../lib/reg.js" )
-const { getSingleton } = require("../../lib/singleton.js")
+const { getsingleton, setsingleton } = require("../../lib/registrar.js")
 
 /*
   Assertions
@@ -77,11 +77,13 @@ describe( "domain.js", function() {
 
       it( "calls the user reg method passing the request and the singleton", function() {
 
+        setsingleton( { options: {} } )
+
         const d = new domain()
 
-        user.init( { reg: ( req, singleton ) => req instanceof Request && singleton === getSingleton() } )
+        user.init( { reg: ( req, singleton ) => req instanceof Request && singleton === getsingleton() } )
 
-        d.reg( Request.init(), getSingleton(), user ).should.equal( true )
+        d.reg( Request.init(), getsingleton(), user ).should.equal( true )
 
       } )
 
@@ -101,7 +103,7 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init(), getSingleton() ) } )
+        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init(), getsingleton() ) } )
 
         d.reg( Request.init(), {}, user ).should.be.an.instanceof( reg )
 
@@ -112,15 +114,15 @@ describe( "domain.js", function() {
 
       it( "returns an array containing info for each registration for each user on the users property", function() {
 
+        setsingleton( { options: {} } )
+
         const d = new domain()
 
-        //const getinfo = function() { return { some_key: "some_value" } }
-
         const u1 = user.init()
-        const r1 = new reg( Request.init(), user.init(), getSingleton() )
+        const r1 = new reg( Request.init(), user.init(), getsingleton() )
 
         const u2 = user.init()
-        const r2 = new reg( Request.init(), user.init(), getSingleton() )
+        const r2 = new reg( Request.init(), user.init(), getsingleton() )
 
         u1.registrations.set( "some_call-id1", r1 )
         d.users.set( "some_username1", u1 )
@@ -128,11 +130,11 @@ describe( "domain.js", function() {
         u2.registrations.set( "some_call-id2", r2 )
         d.users.set( "some_username2", u2 )
 
-        const ua = d.getinfo( getSingleton().options )
+        const ua = d.getinfo( getsingleton().options )
 
         ua.should.be.an( "array" )
-        ua[ 0 ].should.eql( r1.getinfo( getSingleton().options ) ) // eql for deep equality
-        ua[ 1 ].should.eql( r2.getinfo( getSingleton().options ) )
+        ua[ 0 ].should.eql( r1.getinfo( getsingleton().options ) ) // eql for deep equality
+        ua[ 1 ].should.eql( r2.getinfo( getsingleton().options ) )
 
       } )
     } )

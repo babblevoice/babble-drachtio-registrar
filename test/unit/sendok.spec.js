@@ -6,7 +6,7 @@ const should = require( "chai" ).should()
 
 const Request = require( "../mock/request.js" )
 
-const { getSingleton, setSingleton } = require( "../../lib/singleton.js" )
+const { getsingleton, setsingleton } = require( "../../lib/registrar.js" )
 const sendok = require( "../../lib/sendok.js" )
 
 /*
@@ -26,7 +26,7 @@ describe( "sendok.js", function() {
 
     it( "sets headers applying the singleton regping option if present", function() {
 
-      setSingleton( { options: { regping: 2 } } )
+      setsingleton( { options: { regping: 2 } } )
 
       const intercept = ( status, options ) => {
           status.should.equal( 200 )
@@ -34,13 +34,13 @@ describe( "sendok.js", function() {
           options.headers.Expires.should.equal( 2 )
       }
 
-      sendok( Request.init(), { send: intercept }, getSingleton().options ) // 1
+      sendok( Request.init(), { send: intercept }, getsingleton().options ) // 1
 
     } )
 
     it( "sets headers applying request registrar properties if singleton regping option not present", function() {
 
-      setSingleton( { options: {} } )
+      setsingleton( { options: {} } )
 
       const intercept = ( status, options ) => { 
         status.should.equal( 200 )
@@ -48,7 +48,7 @@ describe( "sendok.js", function() {
         options.headers.Expires.should.equal( 1 )
       }
 
-      sendok( Request.init(), { send: intercept }, getSingleton().options )
+      sendok( Request.init(), { send: intercept }, getsingleton().options )
 
     } )
   } )

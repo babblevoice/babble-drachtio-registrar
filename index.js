@@ -23,6 +23,6 @@
   provide an interface to query registrations.
 */
 
-const Registrar = require( "./lib/registrar.js" )
+const { Registrar } = require( "./lib/registrar.js" )
 
 module.exports = Registrar

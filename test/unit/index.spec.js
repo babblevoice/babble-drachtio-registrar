@@ -1,6 +1,12 @@
+/*
+  Dependencies
+*/
 
 const should = require( "chai" ).should()
 
+/*
+  Assertions
+*/
 
 describe( "index.js", function() {
 
