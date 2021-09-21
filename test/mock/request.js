@@ -58,7 +58,7 @@ class Request {
     }
   }
 
-  static values = Request.defaultValues
+  static values = { ...Request.defaultValues }
 
   constructor() {
 
@@ -67,23 +67,26 @@ class Request {
     })
   }
 
-  static update = function( newValues ) {
+  static update = function( newValues, values = Request.values ) {
 
-    const keys = Object.keys( Request.values )
+    const keys = Object.keys( values )
 
     for( let key in newValues ) {
       if( keys.includes( key ) ) {
-        Request.values[ key ] = newValues[ key ]
-
-        if( typeof key === "object" ) Request.update( newValues[ key ] )
+        if( Object.prototype.toString.call( newValues[ key ] ).slice( 8, -1 ) === "Object" ) {
+          values[ key ] = { ...Request.update( newValues[ key ], values[ key ] ) }
+          continue
+        }
+        values[ key ] = newValues[ key ]
       }
     }
+    return values
   }
 
   static init = function( initialValues ) {
 
-    Request.update( Request.defaultValues )
-    Request.update( initialValues )
+    const resetValues = Request.update( Request.defaultValues )
+    Request.values = Request.update( initialValues, resetValues )
 
     return new Request()
   }
