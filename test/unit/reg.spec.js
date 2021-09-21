@@ -10,15 +10,9 @@ const should = require( "chai" ).should()
 const Request = require( "../mock/request.js" )
 const user = require( "../mock/user.js" )
 
+const { clearTimer } = require( "../util/cleanup.js" )
+
 const reg = require( "../../lib/reg.js" )
-
-/*
-  Utilities
-*/
-
-const clearTimer = function( instance ) {
-  clearTimeout( instance.regexpiretimer )
-}
 
 /*
   Assertions
