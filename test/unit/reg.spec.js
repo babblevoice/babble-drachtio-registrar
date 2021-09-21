@@ -37,7 +37,7 @@ describe( "reg.js", function() {
 
     it( "returns an instance of itself when called with the new keyword", function() {
 
-      registrar = { options: {} }
+      const registrar = { options: {} }
 
       const r = new reg( Request.init(), user.init(), registrar )
 
@@ -49,10 +49,10 @@ describe( "reg.js", function() {
 
     describe( "constructor", function() {
 
-      registrar = { options: {} }
+      const registrar = { options: {} }
 
       const someUser = user.init()
-      const r = new reg( Request.init( {} ), someUser, registrar )
+      const r = new reg( Request.init(), someUser, registrar )
 
       const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
@@ -91,7 +91,7 @@ describe( "reg.js", function() {
 
       it( "sets the expires property to the registrar expires option if present", function() {
 
-        registrar = { options: { regping: () => {}, expires: 2 } }
+        const registrar = { options: { regping: () => {}, expires: 2 } }
 
         const r = new reg( Request.init(), user.init(), registrar ) // 1
 
@@ -107,7 +107,7 @@ describe( "reg.js", function() {
 
         const expires = 2
 
-        registrar = { options: { regping: () => {}, expires } }
+        const registrar = { options: { regping: () => {}, expires } }
 
         const r = new reg( Request.init(), user.init(), registrar ) // 1
 
@@ -131,7 +131,7 @@ describe( "reg.js", function() {
 
         const expires = 2
 
-        registrar = { options: { regping: () => {}, expires } }
+        const registrar = { options: { regping: () => {}, expires } }
 
         const r = new reg( Request.init(), user.init(), registrar ) // 1
 
@@ -153,7 +153,7 @@ describe( "reg.js", function() {
 
       it( "returns the contact URIs mapped to an array", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar ) // see Request.defaultValues for contact value
 
@@ -165,7 +165,7 @@ describe( "reg.js", function() {
 
       it( "returns the uuid, initial, callid, aor, expires, authorization, registeredat, useragent, allow and network properties", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -183,7 +183,7 @@ describe( "reg.js", function() {
 
       it( "returns an expiresat property being the sum of the registeredat and expires properties", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -198,7 +198,7 @@ describe( "reg.js", function() {
 
       it( "returns an expiresin property being the sum of the registeredat and expires properties minus the current JavaScript date in seconds rounded down", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -213,7 +213,7 @@ describe( "reg.js", function() {
 
       it( "returns a stale property being a boolean generated with the ping and registrar options staletime properties", function() {
 
-        registrar = { options: { staletime: 1 } }
+        const registrar = { options: { staletime: 1 } }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -232,7 +232,7 @@ describe( "reg.js", function() {
 
       it( "resets the regexpiretimer property", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -248,7 +248,7 @@ describe( "reg.js", function() {
 
       it( "resets the registeredat property", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -264,7 +264,7 @@ describe( "reg.js", function() {
 
       it( "sets the initial property to false", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -281,7 +281,7 @@ describe( "reg.js", function() {
 
       it( "resets the ping property", function( done ) {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -300,7 +300,7 @@ describe( "reg.js", function() {
 
       it( "calls the user property remove method passing the instance as an argument", function( done ) {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const runShould = function( ci ) { ci.should.equal( r.callid ) }
 
@@ -323,7 +323,7 @@ describe( "reg.js", function() {
 
         const em = new EventEmitter()
 
-        registrar = { options: { em } }
+        const registrar = { options: { em } }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -338,7 +338,7 @@ describe( "reg.js", function() {
 
       it( "clears the optionsintervaltimer property", function() {
 
-        registrar = { options: { em: { emit: () => {} }, optionsping: 1 } }
+        const registrar = { options: { em: { emit: () => {} }, optionsping: 1 } }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -350,7 +350,7 @@ describe( "reg.js", function() {
 
       it( "clears the regexpiretimer property", function() {
 
-        registrar = { options: { em: { emit: () => {} } } }
+        const registrar = { options: { em: { emit: () => {} } } }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -363,7 +363,7 @@ describe( "reg.js", function() {
 
     describe( "pingoptions", function() {
 
-      it( "calls the SRF request method with the URI, an object with the correct request method and subject header and a callback", function( done ) {
+      it( "calls the SRF request method passing the URI, an object with the correct request method and subject header and a callback", function( done ) {
 
         const runShould = ( uri, obj, cb ) => {
           uri.should.equal( "some_uri" )
@@ -378,7 +378,7 @@ describe( "reg.js", function() {
           if( !hasAsserted ) { hasAsserted = true; runShould( uri, obj, cb ); clearTimer( r ); done() }
         }
 
-        registrar = { options: { srf: { request: ( uri, obj, cb ) => { intercept( uri, obj, cb ) } } } }
+        const registrar = { options: { srf: { request: ( uri, obj, cb ) => { intercept( uri, obj, cb ) } } } }
 
         const r = new reg( Request.init(), user.init(), registrar )
 
@@ -386,13 +386,13 @@ describe( "reg.js", function() {
 
       } )
 
-      it( "calls the registrar consolelog property with an error message on SRF request error", function( done ) {
+      it( "calls the registrar consolelog method passing an error message on SRF request error", function( done ) {
 
         const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
 
         const intercept = msg2 => { runShould( msg2 ); clearTimer( r ); done() }
 
-        registrar = {
+        const registrar = {
           options: {
             srf: { request: ( uri, obj, cb ) => { cb( "msg1" ) } }
           },
@@ -409,7 +409,7 @@ describe( "reg.js", function() {
 
         const em = new EventEmitter()
 
-        registrar = {
+        const registrar = {
           options: {
             srf: {
               request: ( uri, obj, cb ) => {

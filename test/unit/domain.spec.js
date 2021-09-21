@@ -51,7 +51,11 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: function() { this.registrations.set( "some_callid", {} ) } } ) // prevents immediate deletion in domain.reg
+        user.init( { // prevents immediate deletion in domain.reg
+          reg: function() {
+            this.registrations.set( "some_callid", {} )
+          }
+        } )
 
         d.reg( Request.init(), {}, user ) // see Request.defaultValues for username value
 
@@ -80,7 +84,9 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: ( req, reg ) => req instanceof Request && reg === registrar } )
+        user.init( {
+          reg: ( req, reg ) => req instanceof Request && reg === registrar
+        } )
 
         d.reg( Request.init(), registrar, user ).should.equal( true )
 
@@ -90,7 +96,11 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => { if( 0 === req.registrar.expires ) return } } )
+        user.init( {
+          reg: req => {
+            if( 0 === req.registrar.expires ) return
+          }
+        } )
 
         const retVal = d.reg( Request.init(), {}, user )
 
@@ -104,7 +114,11 @@ describe( "domain.js", function() {
 
         const d = new domain()
 
-        user.init( { reg: req => 0 != req.registrar.expires && new reg( Request.init(), user.init(), registrar ) } )
+        user.init( {
+          reg: req => {
+            if( 0 != req.registrar.expires ) return new reg( Request.init(), user.init(), registrar )
+          }
+        } )
 
         d.reg( Request.init(), {}, user ).should.be.an.instanceof( reg )
 
