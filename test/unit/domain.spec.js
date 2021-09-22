@@ -144,7 +144,7 @@ describe( "domain.js", function() {
       } )
     } )
 
-    describe( "getinfo", function() {
+    describe( "info", function() {
 
       it( "returns an array containing info for each registration for each user on the users property", function() {
 
@@ -164,11 +164,11 @@ describe( "domain.js", function() {
         u2.registrations.set( "some_call-id2", r2 )
         d.users.set( "some_username2", u2 )
 
-        const ua = d.getinfo( registrar.options )
+        const ua = d.info( registrar.options )
 
         ua.should.be.an( "array" )
-        ua[ 0 ].should.eql( r1.getinfo( registrar.options ) ) // eql for deep equality
-        ua[ 1 ].should.eql( r2.getinfo( registrar.options ) )
+        ua[ 0 ].should.eql( r1.info( registrar.options ) ) // eql for deep equality
+        ua[ 1 ].should.eql( r2.info( registrar.options ) )
 
         clearTimer( r1 )
         clearTimer( r2 )

@@ -145,7 +145,7 @@ describe( "reg.js", function() {
       })
     } )
 
-    describe( "getinfo", function() {
+    describe( "info", function() {
 
       it( "returns the contact URIs mapped to an array", function() {
 
@@ -154,7 +154,7 @@ describe( "reg.js", function() {
 
         const r = new reg( Request.init(), u, registrar ) // see Request.defaultValues for contact value
 
-        r.getinfo( registrar.options ).contacts.should.eql( [ "some_uri", "some_uri" ] ) // eql for deep equality
+        r.info( registrar.options ).contacts.should.eql( [ "some_uri", "some_uri" ] ) // eql for deep equality
 
         clearTimer( r )
 
@@ -171,7 +171,7 @@ describe( "reg.js", function() {
 
         testValues.forEach( testValue => {
 
-          r.getinfo( registrar.options )[ testValue ].should.equal( r[ testValue ] )
+          r.info( registrar.options )[ testValue ].should.equal( r[ testValue ] )
 
         } )
 
@@ -189,7 +189,7 @@ describe( "reg.js", function() {
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const expiresat = dateOver1000Floored + 1 // per Request.defaultValues
 
-        r.getinfo( registrar.options ).expiresat.should.equal( expiresat )
+        r.info( registrar.options ).expiresat.should.equal( expiresat )
 
         clearTimer( r )
 
@@ -205,7 +205,7 @@ describe( "reg.js", function() {
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const expiresin = dateOver1000Floored + 1 - dateOver1000Floored // see Request.defaultValues for expires value
 
-        r.getinfo( registrar.options ).expiresin.should.equal( expiresin )
+        r.info( registrar.options ).expiresin.should.equal( expiresin )
 
         clearTimer( r )
 
@@ -221,8 +221,8 @@ describe( "reg.js", function() {
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const stale = dateOver1000Floored < dateOver1000Floored - 1 // ping is JavaScript date in seconds rounded down
 
-        r.getinfo( registrar.options ).stale.should.be.an( "boolean" )
-        r.getinfo( registrar.options ).stale.should.equal( stale )
+        r.info( registrar.options ).stale.should.be.an( "boolean" )
+        r.info( registrar.options ).stale.should.equal( stale )
 
         clearTimer( r )
 
@@ -345,7 +345,7 @@ describe( "reg.js", function() {
         const r = new reg( Request.init(), u, registrar )
 
         em.on( "unregister", function( info ) {
-          info.should.eql( r.getinfo( registrar.options ) ) // eql for deep equality
+          info.should.eql( r.info( registrar.options ) ) // eql for deep equality
           done()
         } )
 
