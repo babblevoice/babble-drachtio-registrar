@@ -61,7 +61,9 @@ describe( "user.js", function() {
 
         const u = new user( {} )
 
-        const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ), { options: {} } ) // see Request.defaultValues for expires value
+        registrar = { options: {} }
+
+        const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ), registrar ) // see Request.defaultValues for expires value
 
         should.equal( retVal, undefined )
 
@@ -71,7 +73,9 @@ describe( "user.js", function() {
 
         const u = new user( {} )
 
-        u.reg( Request.init(), { options: {} } ) // see Request.defaultValues for call-id and expires value
+        registrar = { options: {} }
+
+        u.reg( Request.init(), registrar ) // see Request.defaultValues for call-id and expires value
 
         const callid = Request.defaultValues.headers[ "call-id" ]
         const r = u.registrations.get( callid )
