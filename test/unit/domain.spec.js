@@ -29,7 +29,7 @@ describe( "domain.js", function() {
 
     it( "returns an instance of itself when called with the new keyword", function() {
 
-      const d = new domain()
+      const d = new domain( {} )
 
       d.should.be.an.instanceof( domain )
 
@@ -39,7 +39,7 @@ describe( "domain.js", function() {
 
       it( "sets the users property to an empty map", function() {
 
-        const d = new domain()
+        const d = new domain( {} )
 
         d.users.should.be.an( "map" )
         d.users.size.should.equal( 0 )
@@ -51,9 +51,9 @@ describe( "domain.js", function() {
 
       it( "adds a user named per the request authorization username property to the users property if not present", function() {
 
-        const d = new domain()
-
         registrar = { options: {} }
+
+        const d = new domain( registrar.options )
 
         const temp = user.prototype.reg
         user.prototype.reg = function() { // prevents deletion in domain.reg
@@ -73,9 +73,9 @@ describe( "domain.js", function() {
 
       it( "removes the user named on the request authorization username property if it has an empty registrations property", function() {
 
-        const d = new domain()
-
         registrar = { options: {} }
+
+        const d = new domain( registrar.options )
 
         const temp = user.prototype.reg
         user.prototype.reg = () => {} // prevents instantiation and addition in user.reg
@@ -90,14 +90,14 @@ describe( "domain.js", function() {
 
       } )
 
-      it( "calls the user reg method passing the request and the registrar", function() {
-
-        const d = new domain()
+      it( "calls the user reg method passing the request", function() {
 
         registrar = { options: {} }
 
+        const d = new domain( registrar.options )
+
         const temp = user.prototype.reg
-        user.prototype.reg = ( req, reg ) => req instanceof Request && reg === registrar
+        user.prototype.reg = req => req instanceof Request
 
         d.reg( Request.init(), registrar ).should.equal( true )
 
@@ -107,9 +107,9 @@ describe( "domain.js", function() {
 
       it( "returns undefined if the request registrar expires property is 0", function() {
 
-        const d = new domain()
-
         registrar = { options: {} }
+
+        const d = new domain( registrar.options )
 
         const temp = user.prototype.reg
         user.prototype.reg = req => {
@@ -126,9 +126,9 @@ describe( "domain.js", function() {
 
       it( "returns a reg instance if the request registrar expires property is not 0", function() {
 
-        const d = new domain()
-
         registrar = { options: {} }
+
+        const d = new domain( registrar.options )
 
         const temp = user.prototype.reg
         const r = new reg( Request.init(), {}, registrar )
@@ -148,9 +148,9 @@ describe( "domain.js", function() {
 
       it( "returns an array containing info for each registration for each user on the users property", function() {
 
-        const d = new domain()
-
         registrar = { options: {} }
+
+        const d = new domain( registrar.options )
 
         const u1 = { registrations: new Map() }
         const r1 = new reg( Request.init(), u1, registrar )
@@ -164,7 +164,7 @@ describe( "domain.js", function() {
         u2.registrations.set( "some_call-id2", r2 )
         d.users.set( "some_username2", u2 )
 
-        const ua = d.info( registrar.options )
+        const ua = d.info()
 
         ua.should.be.an( "array" )
         ua[ 0 ].should.eql( r1.info( registrar.options ) ) // eql for deep equality

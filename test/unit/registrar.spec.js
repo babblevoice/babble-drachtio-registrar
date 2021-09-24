@@ -92,8 +92,8 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { debug: true, srf: { use: () => {} } } )
 
-        registrar.consolelog.toString().should.include( "m => {" )
-        registrar.consolelog.toString().should.include( "console.log( \"Registrar: \" + m )" )
+        registrar.options.consolelog.toString().should.include( "m => {" )
+        registrar.options.consolelog.toString().should.include( "console.log( \"Registrar: \" + m )" )
 
       } )
 
@@ -101,7 +101,7 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.consolelog.toString().should.equal( "m => {}" )
+        registrar.options.consolelog.toString().should.equal( "m => {}" )
 
       } )
     } )
