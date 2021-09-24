@@ -138,5 +138,54 @@ describe( "registrar.js", function() {
 
       } )
     } )
+
+    describe( "users", function() {
+
+      it( "returns an empty array if the key passed is not present on the domains property", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar.users( "some_domain" ).should.eql( [] )
+
+      } )
+
+      it( "calls the domain info method, returning the result, for a value on the domains property corresponding to the key passed if present", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const intercept = () => [ "some_info" ]
+
+        registrar.domains.set( "some_domain", { info: intercept } )
+
+        registrar.users( "some_domain" ).should.eql( [ "some_info" ] )
+
+      } )
+    } )
+
+    describe( "user", function() {
+
+      it( "returns an empty array if the realm passed is not present on the domains property", async function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const result = await registrar.user( "some_realm", "some_username" )
+
+        result.should.eql( [] )
+
+      } )
+
+      it( "returns an empty array if the username passed is not present on the realm passed", async function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar.domains.set( "some_realm", { users: new Map() } )
+        registrar.domains.get( "some_realm" ).users.set( "some_username1", {} )
+
+        const result = await registrar.user( "some_realm", "some_username2" )
+
+        result.should.eql( [] )
+
+      } )
+    } )
   } )
 } )
