@@ -87,7 +87,7 @@ describe( "user.js", function() {
 
       } )
 
-      it( "calls the remove method passing the call ID and options and returns if a registration is listed under the call ID on the registrations property and the request registrar expires property is 0", function() {
+      it( "calls the remove method passing the call ID and returns if a registration is listed under the call ID on the registrations property and the request registrar expires property is 0", function() {
 
         const registrar = { options: {} }
 
@@ -96,14 +96,14 @@ describe( "user.js", function() {
         const callid = Request.defaultValues.headers[ "call-id" ]
 
         let hasPassed = false
-        const intercept = ( ci, options ) => {
-          if( ci == callid && options == registrar.options ) hasPassed = true
+        const intercept = ci => {
+          if( ci == callid ) hasPassed = true
         }
 
-        u.registrations.set( callid, new reg( Request.init(), u, registrar ) )
+        u.registrations.set( callid, new reg( Request.init(), u ) )
         u.remove = intercept
 
-        const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ), registrar ) // see Request.defaultValues for call-id and expires value
+        const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ) ) // see Request.defaultValues for call-id and expires value
 
         hasPassed.should.equal( true )
         should.equal( retVal, undefined )
@@ -127,7 +127,7 @@ describe( "user.js", function() {
         let hasCalled = false
         const interceptUpdate = () => { hasCalled = true }
 
-        const r = new reg( Request.init(), u, registrar )
+        const r = new reg( Request.init(), u )
         r.update = interceptUpdate
         u.registrations.set( callid, r )
 
@@ -155,7 +155,7 @@ describe( "user.js", function() {
         let hasCalled = false
         const intercept = () => { hasCalled = true }
 
-        const r = new reg( Request.init(), u, registrar )
+        const r = new reg( Request.init(), u )
         r.destroy = intercept
         u.registrations.set( callid, r )
 

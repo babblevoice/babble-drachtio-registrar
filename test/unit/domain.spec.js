@@ -131,7 +131,7 @@ describe( "domain.js", function() {
         const d = new domain( registrar.options )
 
         const temp = user.prototype.reg
-        const r = new reg( Request.init(), {}, registrar )
+        const r = new reg( Request.init(), { options: registrar.options } )
         user.prototype.reg = req => {
           if( 0 != req.registrar.expires ) return r
         }
@@ -152,11 +152,11 @@ describe( "domain.js", function() {
 
         const d = new domain( registrar.options )
 
-        const u1 = { registrations: new Map() }
-        const r1 = new reg( Request.init(), u1, registrar )
+        const u1 = { registrations: new Map(), options: registrar.options }
+        const r1 = new reg( Request.init(), u1 )
 
-        const u2 = { registrations: new Map() }
-        const r2 = new reg( Request.init(), u2, registrar )
+        const u2 = { registrations: new Map(), options: registrar.options }
+        const r2 = new reg( Request.init(), u2 )
 
         u1.registrations.set( "some_call-id1", r1 )
         d.users.set( "some_username1", u1 )
