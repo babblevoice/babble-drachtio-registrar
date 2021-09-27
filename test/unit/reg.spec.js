@@ -31,7 +31,7 @@ describe( "reg.js", function() {
     it( "returns an instance of itself when called with the new keyword", function() {
 
       const registrar = { options: {} }
-      const u = { authorization: { username: "some_username" }, options: registrar.options }
+      const u = { authorization: { username: "some_user" }, options: registrar.options }
 
       const r = new reg( Request.init(), u )
 
@@ -43,8 +43,8 @@ describe( "reg.js", function() {
 
     describe( "constructor", function() {
 
-      const registrar = { options: {} }
-      const u = { authorization: { username: "some_username" }, options: registrar.options }
+      const registrar = { options: { divisor: 1000 } }
+      const u = { authorization: { username: "some_user" }, options: registrar.options }
 
       const r = new reg( Request.init(), u )
 
@@ -62,8 +62,8 @@ describe( "reg.js", function() {
         { name: "aor", expected: "some_aor" },
         { name: "expires", expected: 1 },
         { name: "user", expected: u },
-        { name: "authorization", calculated: JSON.stringify( r.authorization ), expected: "{\"username\":\"some_username\"}" },
-        { name: "options", calculated: JSON.stringify( r.options ), expected: "{}" },
+        { name: "authorization", calculated: JSON.stringify( r.authorization ), expected: "{\"username\":\"some_user\"}" },
+        { name: "options", calculated: JSON.stringify( r.options ), expected: "{\"divisor\":1000}" },
         { name: "registeredat", expected: dateOver1000Floored },
         { name: "ping", expected: dateOver1000Floored },
         { name: "regexpiretimer", calculated: `${ r.regexpiretimer._onTimeout.name }, ${ r.regexpiretimer._idleTimeout }`, expected: "onexpire, 1000" }
@@ -85,7 +85,7 @@ describe( "reg.js", function() {
       it( "sets the expires property to the user options expires option if present", function() {
 
         const registrar = { options: { regping: () => {}, expires: 2 } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -103,7 +103,7 @@ describe( "reg.js", function() {
         const expires = 2
 
         const registrar = { options: { regping: () => {}, expires } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -128,7 +128,7 @@ describe( "reg.js", function() {
         const expires = 2
 
         const registrar = { options: { regping: () => {}, expires } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -151,7 +151,7 @@ describe( "reg.js", function() {
       it( "returns the contact URIs mapped to an array", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // see Request.defaultValues for contact value
 
@@ -163,8 +163,8 @@ describe( "reg.js", function() {
 
       it( "returns the uuid, initial, callid, aor, expires, authorization, registeredat, useragent, allow and network properties", function() {
 
-        const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const registrar = { options: { divisor: 1000 } }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -182,8 +182,8 @@ describe( "reg.js", function() {
 
       it( "returns an expiresat property being the sum of the registeredat and expires properties", function() {
 
-        const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const registrar = { options: { divisor: 1000 } }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -198,8 +198,8 @@ describe( "reg.js", function() {
 
       it( "returns an expiresin property being the sum of the registeredat and expires properties minus the current JavaScript date in seconds rounded down", function() {
 
-        const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const registrar = { options: { divisor: 1000 } }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -215,7 +215,7 @@ describe( "reg.js", function() {
       it( "returns a stale property being a boolean generated with the ping and registrar options staletime properties", function() {
 
         const registrar = { options: { staletime: 1 } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -235,7 +235,7 @@ describe( "reg.js", function() {
       it( "resets the regexpiretimer property", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -251,8 +251,8 @@ describe( "reg.js", function() {
 
       it( "resets the registeredat property", function() {
 
-        const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const registrar = { options: { divisor: 1000 } }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -269,7 +269,7 @@ describe( "reg.js", function() {
       it( "sets the initial property to false", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -286,9 +286,9 @@ describe( "reg.js", function() {
 
       it( "resets the ping property", function( done ) {
 
-        const registrar = { options: {} }
+        const registrar = { options: { divisor: 1 } }
         const u = {
-          authorization: { username: "some_username" },
+          authorization: { username: "some_user" },
           options: registrar.options,
           remove: () => {}
         }
@@ -305,7 +305,7 @@ describe( "reg.js", function() {
           if( !hasAsserted ) { hasAsserted = true; r.regping(); runShould(); clearTimer( r ); done() }
         }
 
-        setTimeout( intercept, 1000 )
+        setTimeout( intercept, 1 )
 
       } )
     } )
@@ -325,7 +325,7 @@ describe( "reg.js", function() {
         }
 
         const u = {
-          authorization: { username: "some_username" },
+          authorization: { username: "some_user" },
           options: registrar.options,
           remove: intercept
         }
@@ -346,7 +346,7 @@ describe( "reg.js", function() {
         const em = new EventEmitter()
 
         const registrar = { options: { em } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -362,7 +362,7 @@ describe( "reg.js", function() {
       it( "clears the optionsintervaltimer property", function() {
 
         const registrar = { options: { em: { emit: () => {} }, optionsping: 1 } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -375,7 +375,7 @@ describe( "reg.js", function() {
       it( "clears the regexpiretimer property", function() {
 
         const registrar = { options: { em: { emit: () => {} } } }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -412,7 +412,7 @@ describe( "reg.js", function() {
             }
           }
         }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -434,7 +434,7 @@ describe( "reg.js", function() {
             consolelog: intercept
           }
         }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -450,6 +450,7 @@ describe( "reg.js", function() {
 
         const registrar = {
           options: {
+            divisor: 1000,
             srf: {
               request: ( uri, obj, cb ) => {
                 cb( null, em )
@@ -458,7 +459,7 @@ describe( "reg.js", function() {
             }
           }
         }
-        const u = { authorization: { username: "some_username" }, options: registrar.options }
+        const u = { authorization: { username: "some_user" }, options: registrar.options }
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 

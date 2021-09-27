@@ -47,7 +47,7 @@ describe( "user.js", function() {
 
       it( "sets the authorization property to the authorization parameter", function() {
 
-        const authorization = { username: "some_username" }
+        const authorization = { username: "some_user" }
         const u = new user( authorization, {} )
 
         u.authorization.should.equal( authorization )
@@ -100,13 +100,17 @@ describe( "user.js", function() {
           if( ci == callid ) hasPassed = true
         }
 
-        u.registrations.set( callid, new reg( Request.init(), u ) )
+        const r = new reg( Request.init(), u )
+
+        u.registrations.set( callid, r )
         u.remove = intercept
 
         const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ) ) // see Request.defaultValues for call-id and expires value
 
         hasPassed.should.equal( true )
         should.equal( retVal, undefined )
+
+        clearTimer( r )
 
       } )
 
@@ -115,7 +119,7 @@ describe( "user.js", function() {
         let message = ""
         const interceptConsolelog = msg => { message = msg }
 
-        const authorization = { username: "some_username" }
+        const authorization = { username: "some_user" }
         const registrar = {
           options: { consolelog: interceptConsolelog }
         }
@@ -134,7 +138,7 @@ describe( "user.js", function() {
         const retVal = u.reg( Request.init(), registrar ) // see Request.defaultValues for call-id and expires value
 
         hasCalled.should.equal( true )
-        message.should.equal( "1 registration(s) for user some_username" )
+        message.should.equal( "1 registration(s) for user some_user" )
         retVal.should.equal( r )
 
         clearTimer( r )

@@ -152,26 +152,22 @@ describe( "domain.js", function() {
 
         const d = new domain( registrar.options )
 
-        const u1 = { registrations: new Map(), options: registrar.options }
-        const r1 = new reg( Request.init(), u1 )
+        const u1 = { registrations: new Map() }
+        const r1 = { info: () => "some_info1" }
 
-        const u2 = { registrations: new Map(), options: registrar.options }
-        const r2 = new reg( Request.init(), u2 )
+        const u2 = { registrations: new Map() }
+        const r2 = { info: () => "some_info2" }
 
         u1.registrations.set( "some_call-id1", r1 )
-        d.users.set( "some_username1", u1 )
+        d.users.set( "some_user1", u1 )
 
         u2.registrations.set( "some_call-id2", r2 )
-        d.users.set( "some_username2", u2 )
+        d.users.set( "some_user2", u2 )
 
         const ua = d.info()
 
-        ua.should.be.an( "array" )
-        ua[ 0 ].should.eql( r1.info( registrar.options ) ) // eql for deep equality
-        ua[ 1 ].should.eql( r2.info( registrar.options ) )
-
-        clearTimer( r1 )
-        clearTimer( r2 )
+        ua[ 0 ].should.equal( "some_info1" )
+        ua[ 1 ].should.equal( "some_info2" )
 
       } )
     } )

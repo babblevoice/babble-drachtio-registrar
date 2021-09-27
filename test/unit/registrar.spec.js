@@ -6,6 +6,8 @@ const { EventEmitter } = require( "events" )
 
 const should = require( "chai" ).should()
 
+const Request = require( "../mock/request.js" )
+
 const Registrar = require( "../../lib/registrar.js" )
 
 /*
@@ -43,6 +45,7 @@ describe( "registrar.js", function() {
           expires: 3600,
           minexpires: 3600,
           staletime: 300,
+          divisor: 1000,
           debug: true,
           em,
           srf: { use: () => {} }
@@ -125,6 +128,114 @@ describe( "registrar.js", function() {
       } )
     } )
 
+    describe( "reg", function() {
+
+      it( "throws an error if the request registrar property is already set", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const invoke = () => { registrar.reg( Request.init(), {}, () => {} ) }
+
+        should.Throw( invoke, "Registrar has been used twice" )
+
+      } )
+
+      it( "invokes the callback if the request method property is not \"REGISTER\"", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        let hasCalled = false
+        const intercept = () => { hasCalled = true }
+
+        const req = Request.init()
+        delete req.registrar
+
+        registrar.reg( req, {}, intercept )
+
+        hasCalled.should.equal( true )
+
+      } )
+    } )
+
+    describe( "isauthed", function() {
+
+      it( "returns false if the realm passed is not present on the domains property", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar.isauthed( "some.realm", "some_user", {} ).should.equal( false )
+
+      } )
+
+      it( "returns false if the user passed is not present on the realm passed", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar.domains.set( "some.realm", { users: new Map() } )
+        registrar.domains.get( "some.realm" ).users.set( "some_user1", {} )
+
+        registrar.isauthed( "some.realm", "some_user2", {} ).should.eql( false )
+
+      } )
+
+      const baseR = {
+        callid: "some_call-id",
+        network: {
+          source_address: "some_source_address",
+          source_port: "some_source_port"
+        }
+      }
+
+      const testValues = [
+        { name: "source address", key: "source_address", mismatch: "some_other_source_address" },
+        { name: "source port", key: "source_port", mismatch: "some_other_source_port" },
+        { name: "call ID", key: "callid", mismatch: "some_other_call-id" }
+      ]
+
+      testValues.forEach( testValue => {
+
+        it( `returns false if the request ${ testValue.name } does not match that on the network property of the registration corresponding to the call ID`, function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} } } )
+
+          const u = { registrations: new Map() }
+          const r = JSON.parse( JSON.stringify( baseR ) )
+
+          testValue.key.includes( "source_" )
+            ? ( r.network[ testValue.key ] = testValue.mismatch )
+            : ( r[ testValue.key ] = testValue.mismatch )
+
+          u.registrations.set( "some_call-id", r )
+
+          registrar.domains.set( "some.realm", { users: new Map() } )
+          registrar.domains.get( "some.realm" ).users.set( "some_user", u )
+
+          const retVal = registrar.isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
+
+          retVal.should.equal( false )
+
+        } )
+      } )
+
+      it( "returns the registration corresponding to the call ID if the request source address, source port and call ID match those on the registration network property", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const u = { registrations: new Map() }
+        const r = JSON.parse( JSON.stringify( baseR ) )
+
+        u.registrations.set( "some_call-id", r )
+
+        registrar.domains.set( "some.realm", { users: new Map() } )
+        registrar.domains.get( "some.realm" ).users.set( "some_user", u )
+
+        const retVal = registrar.isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
+
+        retVal.should.equal( r )
+
+      } )
+    } )
+
     describe( "realms", function() {
 
       it( "returns an array containing the keys of the domains property", function() {
@@ -145,7 +256,7 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.users( "some_domain" ).should.eql( [] )
+        registrar.users( "some.domain" ).should.eql( [] )
 
       } )
 
@@ -155,20 +266,38 @@ describe( "registrar.js", function() {
 
         const intercept = () => [ "some_info" ]
 
-        registrar.domains.set( "some_domain", { info: intercept } )
+        registrar.domains.set( "some.domain", { info: intercept } )
 
-        registrar.users( "some_domain" ).should.eql( [ "some_info" ] )
+        registrar.users( "some.domain" ).should.eql( [ "some_info" ] )
 
       } )
     } )
 
     describe( "user", function() {
 
+      it( "parses the host and username from the realm if username not passed", async function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const u = { registrations: new Map() }
+        const r = { info: () => "some_info" }
+
+        u.registrations.set( "some_call-id", r )
+
+        registrar.domains.set( "some.realm", { users: new Map() } )
+        registrar.domains.get( "some.realm" ).users.set( "1000", u )
+
+        const ua = await registrar.user( "sip:1000@some.realm" )
+
+        ua[ 0 ].should.equal( "some_info" )
+
+      } )
+
       it( "returns an empty array if the realm passed is not present on the domains property", async function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        const result = await registrar.user( "some_realm", "some_username" )
+        const result = await registrar.user( "some.realm", "some_user" )
 
         result.should.eql( [] )
 
@@ -178,12 +307,34 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.domains.set( "some_realm", { users: new Map() } )
-        registrar.domains.get( "some_realm" ).users.set( "some_username1", {} )
+        registrar.domains.set( "some.realm", { users: new Map() } )
+        registrar.domains.get( "some.realm" ).users.set( "some_user1", {} )
 
-        const result = await registrar.user( "some_realm", "some_username2" )
+        const result = await registrar.user( "some.realm", "some_user2" )
 
         result.should.eql( [] )
+
+      } )
+
+      it( "returns an array containing info for each registration for the username passed at the realm passed", async function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const u = { registrations: new Map() }
+
+        const r1 = { info: () => "some_info1" }
+        const r2 = { info: () => "some_info2" }
+
+        u.registrations.set( "some_call-id1", r1 )
+        u.registrations.set( "some_call-id2", r2 )
+
+        registrar.domains.set( "some.realm", { users: new Map() } )
+        registrar.domains.get( "some.realm" ).users.set( "some_user", u )
+
+        const ua = await registrar.user( "some.realm", "some_user" )
+
+        ua[ 0 ].should.equal( "some_info1" )
+        ua[ 1 ].should.equal( "some_info2" )
 
       } )
     } )
