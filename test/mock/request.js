@@ -17,14 +17,14 @@ class Request {
     */
 
     get: function( header ) { return this.headers[ header ] },
-    getParsedHeader: () => {},
+    getParsedHeader: function( header ) { return { uri: this.headers[ header ] } },
     has: () => {},
 
     body: "some_body",
     calledNumber: "some_calledNumber",
     callingNumber: "some_callingNumber",
     headers: {},
-    method: "some_method",
+    method: "REGISTER",
     payload: [],
     protocol: "some_protocol",
     reason: "some_reason",
@@ -54,7 +54,8 @@ class Request {
     },
     headers: {
       "call-id": "some_call-id",
-      "Contact": "expires=1"
+      "Contact": "expires=1",
+      "To": "sip:1000@some.realm"
     }
   }
 
@@ -83,12 +84,16 @@ class Request {
     return values
   }
 
-  static init = function( initialValues ) {
+  static init = function( initialValues = {}, hasRegistrar = true ) {
 
     const resetValues = Request.update( Request.defaultValues )
     Request.values = Request.update( initialValues, resetValues )
 
-    return new Request()
+    const r = new Request()
+
+    if( !hasRegistrar ) delete r.registrar
+
+    return r
   }
 }
 

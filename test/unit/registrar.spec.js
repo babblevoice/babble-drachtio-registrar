@@ -147,12 +147,62 @@ describe( "registrar.js", function() {
         let hasCalled = false
         const intercept = () => { hasCalled = true }
 
-        const req = Request.init()
-        delete req.registrar
+        const req = Request.init( { method: "NOT_REGISTER" }, false ) // no registrar property
 
         registrar.reg( req, {}, intercept )
 
         hasCalled.should.equal( true )
+
+      } )
+
+      it( "calls the isauthed method passing the host and username parsed from the request registration AOR property and the request", async function() {
+
+        const registrar = new Registrar( {
+          srf: { use: () => {} },
+          userlookup: () => new Promise( ( res, rej ) => {} )
+        } )
+
+        let hasPassed = false
+        const intercept = ( host, username, request ) => {
+          if( host === "some.realm" && username === "1000" && request === req ) hasPassed = true
+        }
+
+        registrar.isauthed = intercept
+
+        const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+
+        registrar.reg( req, {}, () => {} )
+
+        hasPassed.should.equal( true )
+
+      } )
+
+      it( "calls the registration onexpire method passing the registration if the request registrar expires property is 0 and the registration is found", function() {
+
+        const registrar = new Registrar( {
+          srf: { use: () => {} },
+          userlookup: () => new Promise( ( res, rej ) => {} )
+        } )
+
+        registrar.isauthed = () => r
+
+        let hasPassed = false
+        const intercept = reg => {
+          if( reg === r ) hasPassed = true
+        }
+
+        const r = { onexpire: intercept, regping: () => {} }
+
+        const req = Request.init( {
+          registration: {
+            aor: "sip:1000@some.realm",
+            expires: 0
+          }
+        }, false ) // no registrar property
+
+        registrar.reg( req, { send: () => {} }, () => {} )
+
+        hasPassed.should.equal( true )
 
       } )
     } )
