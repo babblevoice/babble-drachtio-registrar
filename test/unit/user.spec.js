@@ -92,22 +92,17 @@ describe( "user.js", function() {
         const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
+        const r = new reg( Request.init(), u )
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
-        let hasPassed = false
-        const intercept = ci => {
-          if( ci == callid ) hasPassed = true
-        }
-
-        const r = new reg( Request.init(), u )
-
         u.registrations.set( callid, r )
-        u.remove = intercept
+        u.remove = ci => {
+          ( ci == callid ).should.equal( true)
+        }
 
         const retVal = u.reg( Request.init( { registrar: { expires: 0 } } ) ) // see Request.defaultValues for call-id and expires value
 
-        hasPassed.should.equal( true )
         should.equal( retVal, undefined )
 
         clearTimer( r )
@@ -117,28 +112,23 @@ describe( "user.js", function() {
       it( "updates a registration listed under the call ID on the registrations property, returns it and calls the registrar options consolelog method passing a status message if the request registrar expires property is not 0", function() {
 
         let message = ""
-        const interceptConsolelog = msg => { message = msg }
 
-        const authorization = { username: "some_user" }
         const registrar = {
-          options: { consolelog: interceptConsolelog }
+          options: { consolelog: msg => { message = msg } }
         }
-
-        const u = new user( authorization, registrar.options )
+        const u = new user( { username: "some_user" }, registrar.options )
+        const r = new reg( Request.init(), u )
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
         let hasCalled = false
-        const interceptUpdate = () => { hasCalled = true }
-
-        const r = new reg( Request.init(), u )
-        r.update = interceptUpdate
+        r.update = () => { hasCalled = true }
         u.registrations.set( callid, r )
 
         const retVal = u.reg( Request.init(), registrar ) // see Request.defaultValues for call-id and expires value
 
-        hasCalled.should.equal( true )
         message.should.equal( "1 registration(s) for user some_user" )
+        hasCalled.should.equal( true )
         retVal.should.equal( r )
 
         clearTimer( r )
@@ -153,14 +143,12 @@ describe( "user.js", function() {
         const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
+        const r = new reg( Request.init(), u )
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
         let hasCalled = false
-        const intercept = () => { hasCalled = true }
-
-        const r = new reg( Request.init(), u )
-        r.destroy = intercept
+        r.destroy = () => { hasCalled = true }
         u.registrations.set( callid, r )
 
         u.remove( callid )

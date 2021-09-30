@@ -117,11 +117,9 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { em, srf: { use: () => {} } } )
 
-        const intercept = data => {
+        registrar.on( "some_event", data => {
           data.should.equal( "some_data" )
-        }
-
-        registrar.on( "some_event", intercept )
+        } )
 
         em.emit( "some_event", "some_data" )
 
@@ -144,12 +142,10 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        let hasCalled = false
-        const intercept = () => { hasCalled = true }
-
         const req = Request.init( { method: "NOT_REGISTER" }, false ) // no registrar property
 
-        registrar.reg( req, {}, intercept )
+        let hasCalled = false
+        registrar.reg( req, {}, () => { hasCalled = true } )
 
         hasCalled.should.equal( true )
 
@@ -162,18 +158,13 @@ describe( "registrar.js", function() {
           userlookup: () => new Promise( ( res, rej ) => {} )
         } )
 
-        let hasPassed = false
-        const intercept = ( host, username, request ) => {
-          if( host === "some.realm" && username === "1000" && request === req ) hasPassed = true
+        registrar.isauthed = ( host, username, request ) => {
+          ( host === "some.realm" && username === "1000" && request === req ).should.equal( true )
         }
-
-        registrar.isauthed = intercept
 
         const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
 
         registrar.reg( req, {}, () => {} )
-
-        hasPassed.should.equal( true )
 
       } )
 
@@ -186,12 +177,12 @@ describe( "registrar.js", function() {
 
         registrar.isauthed = () => r
 
-        let hasPassed = false
-        const intercept = reg => {
-          if( reg === r ) hasPassed = true
+        const r = {
+          onexpire: reg => {
+           ( reg === r ).should.equal( true )
+          },
+          regping: () => {}
         }
-
-        const r = { onexpire: intercept, regping: () => {} }
 
         const req = Request.init( {
           registration: {
@@ -201,8 +192,6 @@ describe( "registrar.js", function() {
         }, false ) // no registrar property
 
         registrar.reg( req, { send: () => {} }, () => {} )
-
-        hasPassed.should.equal( true )
 
       } )
     } )
@@ -314,9 +303,7 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        const intercept = () => [ "some_info" ]
-
-        registrar.domains.set( "some.domain", { info: intercept } )
+        registrar.domains.set( "some.domain", { info: () => [ "some_info" ] } )
 
         registrar.users( "some.domain" ).should.eql( [ "some_info" ] )
 

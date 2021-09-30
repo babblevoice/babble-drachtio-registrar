@@ -292,7 +292,6 @@ describe( "reg.js", function() {
           options: registrar.options,
           remove: () => {}
         }
-
         const r = new reg( Request.init(), u )
 
         const ping = r.ping
@@ -302,7 +301,9 @@ describe( "reg.js", function() {
         let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
 
         const intercept = () => {
-          if( !hasAsserted ) { hasAsserted = true; r.regping(); runShould(); clearTimer( r ); done() }
+          if( !hasAsserted ) {
+            hasAsserted = true; r.regping(); runShould(); clearTimer( r ); done()
+          }
         }
 
         setTimeout( intercept, 1 )
@@ -320,16 +321,15 @@ describe( "reg.js", function() {
 
         let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
 
-        const intercept = ci => {
-          if( !hasAsserted ) { hasAsserted = true; runShould( ci ); clearTimer( r ); done() }
-        }
-
         const u = {
           authorization: { username: "some_user" },
           options: registrar.options,
-          remove: intercept
+          remove: ci => {
+            if( !hasAsserted ) {
+              hasAsserted = true; runShould( ci ); clearTimer( r ); done()
+            }
+          }
         }
-
         const r = new reg( Request.init(), u )
 
         r.onexpire( r )
@@ -400,7 +400,9 @@ describe( "reg.js", function() {
         let hasAsserted = false // intercept will be called for both URIs, with second call to done throwing error
 
         const intercept = ( uri, obj, cb) => {
-          if( !hasAsserted ) { hasAsserted = true; runShould( uri, obj, cb ); clearTimer( r ); done() }
+          if( !hasAsserted ) {
+            hasAsserted = true; runShould( uri, obj, cb ); clearTimer( r ); done()
+          }
         }
 
         const registrar = {
@@ -426,16 +428,19 @@ describe( "reg.js", function() {
 
         const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
 
-        const intercept = msg2 => { runShould( msg2 ); clearTimer( r ); done() }
-
         const registrar = {
           options: {
-            srf: { request: ( uri, obj, cb ) => { cb( "msg1" ) } },
-            consolelog: intercept
+            srf: {
+              request: ( uri, obj, cb ) => {
+                cb( "msg1" )
+              }
+            },
+            consolelog: msg2 => {
+              runShould( msg2 ); clearTimer( r ); done()
+            }
           }
         }
         const u = { authorization: { username: "some_user" }, options: registrar.options }
-
         const r = new reg( Request.init(), u )
 
         r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
