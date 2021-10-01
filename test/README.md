@@ -4,6 +4,14 @@
 
 - [Node](https://nodejs.org/en/download/) with npm
 
+## Test types available
+
+One test type is available: unit. The set of test files is stored in a corresponding directory:
+
+- test/unit/
+
+The test type can be run with Mocha and Chai.
+
 ## Running tests - with Mocha & Chai
 
 ### Additional requirements
@@ -132,7 +140,7 @@ babble-drachtio-registrar/
 ### Known issues
 
 - the reg class is used in each of domain.spec.js and user.spec.js rather than an object literal
-- the initial comments in the reg and Registrar module are incomplete, and the sendok module has no initial comment
+- the comments in the reg and Registrar module are incomplete, and the sendok module has none
 
 ## Future tasks
 
