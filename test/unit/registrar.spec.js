@@ -45,7 +45,6 @@ describe( "registrar.js", function() {
           expires: 3600,
           minexpires: 3600,
           staletime: 300,
-          divisor: 1000,
           debug: true,
           em,
           srf: { use: () => {} }
@@ -151,14 +150,14 @@ describe( "registrar.js", function() {
 
       } )
 
-      it( "calls the isauthed method passing the host and username parsed from the request registration AOR property and the request", async function() {
+      it( "calls the _isauthed method passing the host and username parsed from the request registration AOR property and the request", function() {
 
         const registrar = new Registrar( {
           srf: { use: () => {} },
           userlookup: () => new Promise( ( res, rej ) => {} )
         } )
 
-        registrar.isauthed = ( host, username, request ) => {
+        registrar._isauthed = ( host, username, request ) => {
           ( host === "some.realm" && username === "1000" && request === req ).should.equal( true )
         }
 
@@ -170,12 +169,9 @@ describe( "registrar.js", function() {
 
       it( "calls the registration onexpire method passing the registration if the request registrar expires property is 0 and the registration is found", function() {
 
-        const registrar = new Registrar( {
-          srf: { use: () => {} },
-          userlookup: () => new Promise( ( res, rej ) => {} )
-        } )
+        const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.isauthed = () => r
+        registrar._isauthed = () => r
 
         const r = {
           onexpire: reg => {
@@ -194,15 +190,83 @@ describe( "registrar.js", function() {
         registrar.reg( req, { send: () => {} }, () => {} )
 
       } )
+
+      it( "calls the registration regping method and the sendok function passing the request and response if the registration is found", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar._isauthed = () => r
+        registrar._sendok = ( request, response, options ) => {
+          ( request === req && response === res ).should.equal( true )
+        }
+
+        let hasCalled = false
+        const r = {
+          onexpire: () => {},
+          regping: () => { hasCalled = true }
+        }
+
+        const req = Request.init( {
+          registration: {
+            aor: "sip:1000@some.realm",
+            expires: 0
+          }
+        }, false ) // no registrar property
+        const res = { send: () => {} }
+
+        registrar.reg( req, res, () => {} )
+
+        hasCalled.should.equal( true );
+
+      } )
+
+      it( "calls the options consolelog method passing a message containing the URI parsed from the request \"To\" header if the registration is not found or registration expiring property is false", function() {
+
+        const registrarInit = _isAuthedRetVal => {
+
+          const registrar = new Registrar( {
+            srf: { use: () => {} },
+            userlookup: () => new Promise( ( res, rej ) => {} ),
+          } )
+          registrar._isauthed = () => _isAuthedRetVal
+          registrar.options.consolelog = intercept
+
+          return registrar
+        }
+
+        let interceptCount = 0
+        const intercept = msg => msg === `Requesting auth for ${ AOR }` && interceptCount++
+
+        const AOR = "sip:1000@some.realm"
+        const res = { send: () => {} }
+
+        // registrar1 - for no registration found
+        const registrar1 = registrarInit( false )
+        const req1 = Request.init( { registration: { aor: AOR } }, false ) // no registrar property
+        registrar1.reg( req1, res, () => {} )
+
+        // registrar2 - for registration found with registration expiring property false
+        const r = {
+          onexpire: () => {},
+          regping: () => {},
+          expiring: true
+        }
+        const registrar2 = registrarInit( r )
+        const req2 = Request.init( { registration: { aor: AOR } }, false ) // no registrar property
+        registrar2.reg( req2, res, () => {} )
+
+        interceptCount.should.equal( 2 )
+
+      } )
     } )
 
-    describe( "isauthed", function() {
+    describe( "_isauthed", function() {
 
       it( "returns false if the realm passed is not present on the domains property", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.isauthed( "some.realm", "some_user", {} ).should.equal( false )
+        registrar._isauthed( "some.realm", "some_user", {} ).should.equal( false )
 
       } )
 
@@ -213,7 +277,7 @@ describe( "registrar.js", function() {
         registrar.domains.set( "some.realm", { users: new Map() } )
         registrar.domains.get( "some.realm" ).users.set( "some_user1", {} )
 
-        registrar.isauthed( "some.realm", "some_user2", {} ).should.eql( false )
+        registrar._isauthed( "some.realm", "some_user2", {} ).should.eql( false )
 
       } )
 
@@ -249,9 +313,43 @@ describe( "registrar.js", function() {
           registrar.domains.set( "some.realm", { users: new Map() } )
           registrar.domains.get( "some.realm" ).users.set( "some_user", u )
 
-          const retVal = registrar.isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
+          const retVal = registrar._isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
 
           retVal.should.equal( false )
+
+        } )
+      } )
+
+      describe( "_sendok", function() {
+
+        it( "sets headers applying the regping option if present", function() {
+
+          const registrar = new Registrar( {
+            srf: { use: () => {} },
+            regping: 2
+          } )
+
+          const intercept = ( status, options ) => {
+              status.should.equal( 200 )
+              options.headers.Contact.should.equal( "expires=2" )
+              options.headers.Expires.should.equal( 2 )
+          }
+
+          registrar._sendok( Request.init(), { send: intercept }, registrar.options ) // 1
+
+        } )
+
+        it( "sets headers applying request registrar properties if regping option not present", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} } } )
+
+          const intercept = ( status, options ) => {
+            status.should.equal( 200 )
+            options.headers.Contact.should.equal( "expires=1" )
+            options.headers.Expires.should.equal( 1 )
+          }
+
+          registrar._sendok( Request.init(), { send: intercept }, registrar.options )
 
         } )
       } )
@@ -268,7 +366,7 @@ describe( "registrar.js", function() {
         registrar.domains.set( "some.realm", { users: new Map() } )
         registrar.domains.get( "some.realm" ).users.set( "some_user", u )
 
-        const retVal = registrar.isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
+        const retVal = registrar._isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
 
         retVal.should.equal( r )
 

@@ -286,7 +286,7 @@ describe( "reg.js", function() {
 
       it( "resets the ping property", function( done ) {
 
-        const registrar = { options: { divisor: 1 } }
+        const registrar = { options: {} }
         const u = {
           authorization: { username: "some_user" },
           options: registrar.options,
@@ -306,7 +306,7 @@ describe( "reg.js", function() {
           }
         }
 
-        setTimeout( intercept, 1 )
+        setTimeout( intercept, 1000 )
 
       } )
     } )
