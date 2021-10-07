@@ -40,7 +40,7 @@ describe( "user.js", function() {
 
         const u = new user( {}, {} )
 
-        u.registrations.should.be.an( "map" )
+        u.registrations.should.be.a( "map" )
         u.registrations.size.should.equal( 0 )
 
       } )

@@ -31,7 +31,7 @@ describe( "reg.js", function() {
     it( "returns an instance of itself when called with the new keyword", function() {
 
       const registrar = { options: {} }
-      const u = { authorization: { username: "some_user" }, options: registrar.options }
+      const u = { authorization: {}, options: registrar.options }
 
       const r = new reg( Request.init(), u )
 
@@ -85,7 +85,7 @@ describe( "reg.js", function() {
       it( "sets the expires property to the user options expires option if present", function() {
 
         const registrar = { options: { regping: () => {}, expires: 2 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -103,7 +103,7 @@ describe( "reg.js", function() {
         const expires = 2
 
         const registrar = { options: { regping: () => {}, expires } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -113,7 +113,7 @@ describe( "reg.js", function() {
 
         const hasExpired = total < dateOver1000Floored
 
-        r.expired.should.be.an( "boolean" )
+        r.expired.should.be.a( "boolean" )
         r.expired.should.equal( hasExpired )
 
         clearTimer( r )
@@ -128,7 +128,7 @@ describe( "reg.js", function() {
         const expires = 2
 
         const registrar = { options: { regping: () => {}, expires } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // 1
 
@@ -138,7 +138,7 @@ describe( "reg.js", function() {
 
         const isExpiring = total < dateOver1000Floored
 
-        r.expiring.should.be.an( "boolean" )
+        r.expiring.should.be.a( "boolean" )
         r.expiring.should.equal( isExpiring )
 
         clearTimer( r )
@@ -151,7 +151,7 @@ describe( "reg.js", function() {
       it( "returns the contact URIs mapped to an array", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u ) // see Request.defaultValues for contact value
 
@@ -164,7 +164,7 @@ describe( "reg.js", function() {
       it( "returns the uuid, initial, callid, aor, expires, authorization, registeredat, useragent, allow and network properties", function() {
 
         const registrar = { options: { divisor: 1000 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -183,7 +183,7 @@ describe( "reg.js", function() {
       it( "returns an expiresat property being the sum of the registeredat and expires properties", function() {
 
         const registrar = { options: { divisor: 1000 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -199,7 +199,7 @@ describe( "reg.js", function() {
       it( "returns an expiresin property being the sum of the registeredat and expires properties minus the current JavaScript date in seconds rounded down", function() {
 
         const registrar = { options: { divisor: 1000 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -215,14 +215,14 @@ describe( "reg.js", function() {
       it( "returns a stale property being a boolean generated with the ping and registrar options staletime properties", function() {
 
         const registrar = { options: { staletime: 1 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
         const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
         const stale = dateOver1000Floored < dateOver1000Floored - 1 // ping is JavaScript date in seconds rounded down
 
-        r.info().stale.should.be.an( "boolean" )
+        r.info().stale.should.be.a( "boolean" )
         r.info().stale.should.equal( stale )
 
         clearTimer( r )
@@ -235,7 +235,7 @@ describe( "reg.js", function() {
       it( "resets the regexpiretimer property", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -252,7 +252,7 @@ describe( "reg.js", function() {
       it( "resets the registeredat property", function() {
 
         const registrar = { options: { divisor: 1000 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -269,7 +269,7 @@ describe( "reg.js", function() {
       it( "sets the initial property to false", function() {
 
         const registrar = { options: {} }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -288,7 +288,7 @@ describe( "reg.js", function() {
 
         const registrar = { options: {} }
         const u = {
-          authorization: { username: "some_user" },
+          authorization: {},
           options: registrar.options,
           remove: () => {}
         }
@@ -322,7 +322,7 @@ describe( "reg.js", function() {
         let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
 
         const u = {
-          authorization: { username: "some_user" },
+          authorization: {},
           options: registrar.options,
           remove: ci => {
             if( !hasAsserted ) {
@@ -346,7 +346,7 @@ describe( "reg.js", function() {
         const em = new EventEmitter()
 
         const registrar = { options: { em } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -362,7 +362,7 @@ describe( "reg.js", function() {
       it( "clears the optionsintervaltimer property", function() {
 
         const registrar = { options: { em: { emit: () => {} }, optionsping: 1 } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -375,7 +375,7 @@ describe( "reg.js", function() {
       it( "clears the regexpiretimer property", function() {
 
         const registrar = { options: { em: { emit: () => {} } } }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -388,12 +388,12 @@ describe( "reg.js", function() {
 
     describe( "pingoptions", function() {
 
-      it( "calls the SRF request method passing the URI, an object with the correct request method and subject header and a callback", function( done ) {
+      it( "calls the SRF request method for each contact passing the URI, an object with the correct request method and subject header and a callback", function( done ) {
 
         const runShould = ( uri, obj, cb ) => {
           uri.should.equal( "some_uri" )
           obj.method.should.equal( "OPTIONS" )
-          obj.headers.should.eql( { "Subject": "OPTIONS Ping" } ) // eql for deep equality
+          obj.headers.should.eql( { Subject: "OPTIONS Ping" } ) // eql for deep equality
           cb.should.be.a( "function" )
         }
 
@@ -414,7 +414,7 @@ describe( "reg.js", function() {
             }
           }
         }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+        const u = { authorization: {}, options: registrar.options }
 
         const r = new reg( Request.init(), u )
 
@@ -424,61 +424,64 @@ describe( "reg.js", function() {
 
       } )
 
-      it( "calls the registrar options consolelog method passing an error message on SRF request error", function( done ) {
+      describe( "SRF request method callback", function() {
 
-        const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
+        it( "calls the registrar options consolelog method passing an error message on SRF request error", function( done ) {
 
-        const registrar = {
-          options: {
-            srf: {
-              request: ( uri, obj, cb ) => {
-                cb( "msg1" )
-              }
-            },
-            consolelog: msg2 => {
-              runShould( msg2 ); clearTimer( r ); done()
-            }
-          }
-        }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
-        const r = new reg( Request.init(), u )
+          const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
 
-        r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
-
-        clearTimer( r )
-
-      } )
-
-      it( "sets the ping property on SRF request success to the current JavaScript date in seconds rounding down", function( done ) {
-
-        const em = new EventEmitter()
-
-        const registrar = {
-          options: {
-            divisor: 1000,
-            srf: {
-              request: ( uri, obj, cb ) => {
-                cb( null, em )
-                em.emit( "response", { status: 200 } )
+          const registrar = {
+            options: {
+              srf: {
+                request: ( uri, obj, cb ) => {
+                  cb( "msg1" )
+                }
+              },
+              consolelog: msg2 => {
+                runShould( msg2 ); clearTimer( r ); done()
               }
             }
           }
-        }
-        const u = { authorization: { username: "some_user" }, options: registrar.options }
+          const u = { authorization: {}, options: registrar.options }
+          const r = new reg( Request.init(), u )
 
-        const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
+          r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
 
-        em.on( "response", function( res ) {
-          r.ping.should.equal( dateOver1000Floored )
-          done()
+          clearTimer( r )
+
         } )
 
-        const r = new reg( Request.init(), u )
+        it( "sets the ping property on SRF request success to the current JavaScript date in seconds rounding down", function( done ) {
 
-        r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
+          const em = new EventEmitter()
 
-        clearTimer( r )
+          const registrar = {
+            options: {
+              divisor: 1000,
+              srf: {
+                request: ( uri, obj, cb ) => {
+                  cb( null, em )
+                  em.emit( "response", { status: 200 } )
+                }
+              }
+            }
+          }
+          const u = { authorization: { username: "some_user" }, options: registrar.options }
 
+          const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
+
+          em.on( "response", function( res ) {
+            r.ping.should.equal( dateOver1000Floored )
+            done()
+          } )
+
+          const r = new reg( Request.init(), u )
+
+          r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
+
+          clearTimer( r )
+
+        } )
       } )
     } )
   } )

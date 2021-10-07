@@ -41,7 +41,7 @@ describe( "domain.js", function() {
 
         const d = new domain( {} )
 
-        d.users.should.be.an( "map" )
+        d.users.should.be.a( "map" )
         d.users.size.should.equal( 0 )
 
       } )

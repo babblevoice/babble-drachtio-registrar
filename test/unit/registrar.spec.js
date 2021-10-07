@@ -58,7 +58,7 @@ describe( "registrar.js", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
-        registrar.domains.should.be.an( "map" )
+        registrar.domains.should.be.a( "map" )
         registrar.domains.size.should.equal( 0 )
 
       } )
@@ -258,6 +258,54 @@ describe( "registrar.js", function() {
         interceptCount.should.equal( 2 )
 
       } )
+
+      it( "passes to the digestauth function an options object containing a proxy property set to true, a password lookup function and a realm property set to the host parsed from the URI parsed in turn from the request \"To\" header, then the request, the response and a callback, if the registration is not found or registration expiring property is false", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+        const res = {}
+
+        const intercept = options => ( request, response, cb ) => {
+          options.proxy.should.equal( true )
+          options.passwordLookup.should.be.a( "function" )
+          options.realm.should.equal( "some.realm" )
+          request.should.equal( req )
+          response.should.equal( res )
+          cb.should.be.a( "function" )
+        }
+
+        registrar.reg( req, res, () => {}, intercept )
+
+      } )
+
+      describe( "passwordLookup", function() {
+
+        it( "calls the options userlookup method passing the username and realm parameters", function() {
+
+          const registrar = new Registrar( {
+            srf: { use: () => {} },
+            userlookup: ( username, realm ) => {
+              runShould( username, realm )
+              return new Promise( ( res, rej ) => { res() } )
+            }
+          } )
+
+          const runShould = ( username, realm ) => {
+            username.should.equal( "some_username" )
+            realm.should.equal( "some.realm" )
+          }
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+
+          const intercept = options => ( request, response, cb ) => {
+            options.passwordLookup( "some_username", "some.realm", () => {} )
+          }
+
+          registrar.reg( req, {}, () => {}, intercept )
+
+        } )
+      } )
     } )
 
     describe( "_isauthed", function() {
@@ -320,40 +368,6 @@ describe( "registrar.js", function() {
         } )
       } )
 
-      describe( "_sendok", function() {
-
-        it( "sets headers applying the regping option if present", function() {
-
-          const registrar = new Registrar( {
-            srf: { use: () => {} },
-            regping: 2
-          } )
-
-          const intercept = ( status, options ) => {
-              status.should.equal( 200 )
-              options.headers.Contact.should.equal( "expires=2" )
-              options.headers.Expires.should.equal( 2 )
-          }
-
-          registrar._sendok( Request.init(), { send: intercept }, registrar.options ) // 1
-
-        } )
-
-        it( "sets headers applying request registrar properties if regping option not present", function() {
-
-          const registrar = new Registrar( { srf: { use: () => {} } } )
-
-          const intercept = ( status, options ) => {
-            status.should.equal( 200 )
-            options.headers.Contact.should.equal( "expires=1" )
-            options.headers.Expires.should.equal( 1 )
-          }
-
-          registrar._sendok( Request.init(), { send: intercept }, registrar.options )
-
-        } )
-      } )
-
       it( "returns the registration corresponding to the call ID if the request source address, source port and call ID match those on the registration network property", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
@@ -369,6 +383,40 @@ describe( "registrar.js", function() {
         const retVal = registrar._isauthed( "some.realm", "some_user", Request.init() ) // see Request.defaultValues for source_address, source_port and call-id value
 
         retVal.should.equal( r )
+
+      } )
+    } )
+
+    describe( "_sendok", function() {
+
+      it( "sets headers applying the regping option if present", function() {
+
+        const registrar = new Registrar( {
+          srf: { use: () => {} },
+          regping: 2
+        } )
+
+        const intercept = ( status, options ) => {
+            status.should.equal( 200 )
+            options.headers.Contact.should.equal( "expires=2" )
+            options.headers.Expires.should.equal( 2 )
+        }
+
+        registrar._sendok( Request.init(), { send: intercept }, registrar.options ) // 1
+
+      } )
+
+      it( "sets headers applying request registrar properties if regping option not present", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const intercept = ( status, options ) => {
+          status.should.equal( 200 )
+          options.headers.Contact.should.equal( "expires=1" )
+          options.headers.Expires.should.equal( 1 )
+        }
+
+        registrar._sendok( Request.init(), { send: intercept }, registrar.options )
 
       } )
     } )
