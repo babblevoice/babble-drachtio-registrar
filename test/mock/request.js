@@ -48,14 +48,26 @@ class Request {
       expires: 1
     },
     registration: {
-      contact: [ { uri: "some_uri" }, { uri: "some_uri" } ],
+      contact: [
+        {
+          uri: "some_uri",
+          params: {
+            methods: "some_value"
+          }
+        },
+        {
+          uri: "some_uri"
+        }
+      ],
       aor: "some_aor",
       expires: 1
     },
     headers: {
+      "allow": "some_allow",
       "call-id": "some_call-id",
       "Contact": "expires=1",
-      "To": "sip:1000@some.realm"
+      "To": "sip:1000@some.realm",
+      "user-agent": "some_useragent"
     }
   }
 

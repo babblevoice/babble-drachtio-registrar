@@ -259,7 +259,7 @@ describe( "registrar.js", function() {
 
       } )
 
-      it( "passes to the digestauth function an options object containing a proxy property set to true, a password lookup function and a realm property set to the host parsed from the URI parsed in turn from the request \"To\" header, then the request, the response and a callback, if the registration is not found or registration expiring property is false", function() {
+      it( "passes to the digest authentication function an options object containing a proxy property set to true, a password lookup function and a realm property set to the host parsed from the URI parsed in turn from the request \"To\" header, if the registration is not found or registration expiring property is false", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
@@ -270,6 +270,20 @@ describe( "registrar.js", function() {
           options.proxy.should.equal( true )
           options.passwordLookup.should.be.a( "function" )
           options.realm.should.equal( "some.realm" )
+        }
+
+        registrar.reg( req, res, () => {}, intercept )
+
+      } )
+
+      it( "passes to the challenge function the request, the response and a callback if the registration is not found or registration expiring property is false", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+        const res = {}
+
+        const intercept = options => ( request, response, cb ) => {
           request.should.equal( req )
           response.should.equal( res )
           cb.should.be.a( "function" )
@@ -287,7 +301,7 @@ describe( "registrar.js", function() {
             srf: { use: () => {} },
             userlookup: ( username, realm ) => {
               runShould( username, realm )
-              return new Promise( ( res, rej ) => { res() } )
+              return new Promise( ( res, rej ) => { res( "some_value" ) } )
             }
           } )
 
@@ -305,6 +319,94 @@ describe( "registrar.js", function() {
           registrar.reg( req, {}, () => {}, intercept )
 
         } )
+
+        it( "invokes the callback passing false and the user secret property in the options userlookup method success case", function() {
+
+          const registrar = new Registrar( {
+            srf: { use: () => {} },
+            userlookup: ( username, realm ) => {
+              return new Promise( ( res, rej ) => { res( { secret: "some_secret" } ) } )
+            }
+          } )
+
+          const runShould = ( boolean, secret ) => {
+            setTimeout( () => {
+              boolean.should.equal( false )
+              secret.should.equal( "some_secret" )
+            }, 1 )
+          }
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+
+          const intercept = options => ( request, response, cb ) => {
+            options.passwordLookup( "some_username", "some.realm", runShould )
+          }
+
+          registrar.reg( req, {}, () => {}, intercept )
+
+        } )
+
+        it( "invokes the callback passing false and false in the options userlookup method failure case", function() {
+
+          const registrar = new Registrar( {
+            srf: { use: () => {} },
+            userlookup: ( username, realm ) => {
+              return new Promise( ( res, rej ) => { rej( "some_value" ) } )
+            }
+          } )
+
+          const runShould = ( boolean, secret ) => {
+            setTimeout( () => {
+              boolean.should.equal( false )
+              secret.should.equal( false )
+            }, 1 )
+          }
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+
+          const intercept = options => ( request, response, cb ) => {
+            options.passwordLookup( "some_username", "some.realm", runShould )
+          }
+
+          registrar.reg( req, {}, () => {}, intercept )
+
+        } )
+      } )
+
+      describe( "onauth", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+        const res = { send: () => {} }
+
+        const intercept = options => ( request, response, cb ) => {
+
+          const rR = request.registrar
+          cb()
+
+          const testValues = [
+
+            { name: "contact", expected: "expires=1" },
+            { name: "useragent", expected: "some_useragent" },
+            { name: "allow", expected: "some_allow" },
+            { name: "expires", expected: 1 }
+          ]
+
+          testValues.forEach( testValue => {
+
+            it( `sets the request registrar ${ testValue.name } property`, function() {
+
+              const discovered = rR[ testValue.name ]
+
+              discovered.should.equal( testValue.expected )
+
+            } )
+          } )
+        }
+
+        registrar.reg( req, res, () => {}, intercept )
+
       } )
     } )
 
