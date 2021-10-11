@@ -174,10 +174,9 @@ describe( "registrar.js", function() {
 
         registrar._isauthed = () => r
 
+        let hasCalled = false
         const r = {
-          onexpire: reg => {
-           ( reg === r ).should.equal( true )
-          },
+          onexpire: () => { hasCalled = true },
           regping: () => {}
         }
 
@@ -189,6 +188,8 @@ describe( "registrar.js", function() {
         }, false ) // no registrar property
 
         registrar.reg( req, { send: () => {} }, () => {} )
+
+        hasCalled.should.equal( true )
 
       } )
 

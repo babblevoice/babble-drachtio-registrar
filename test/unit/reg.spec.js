@@ -66,7 +66,7 @@ describe( "reg.js", function() {
         { name: "options", calculated: JSON.stringify( r.options ), expected: "{\"divisor\":1000}" },
         { name: "registeredat", expected: dateOver1000Floored },
         { name: "ping", expected: dateOver1000Floored },
-        { name: "regexpiretimer", calculated: `${ r.regexpiretimer._onTimeout.name }, ${ r.regexpiretimer._idleTimeout }`, expected: "onexpire, 1000" }
+        { name: "regexpiretimer", calculated: `${ r.regexpiretimer._onTimeout.name }, ${ r.regexpiretimer._idleTimeout }`, expected: "bound onexpire, 1000" }
       ]
 
       testValues.forEach( testValue => {
@@ -413,7 +413,7 @@ describe( "reg.js", function() {
 
         const r = new reg( Request.init(), u )
 
-        r.pingoptions( { contact: [ { uri: "some_uri" }, { uri: "some_uri" } ] } )
+        r.pingoptions()
 
         clearTimer( r )
 
@@ -425,6 +425,8 @@ describe( "reg.js", function() {
 
           const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
 
+          let assertCount = 0 // intercept will be called for both URIs, with second call to done throwing error
+
           const registrar = {
             options: {
               srf: {
@@ -433,14 +435,17 @@ describe( "reg.js", function() {
                 }
               },
               consolelog: msg2 => {
-                runShould( msg2 ); clearTimer( r ); done()
+                runShould( msg2 )
+                clearTimer( r )
+                assertCount++
+                if( assertCount === 2 ) done()
               }
             }
           }
           const u = { options: registrar.options }
           const r = new reg( Request.init(), u )
 
-          r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
+          r.pingoptions()
 
           clearTimer( r )
 
@@ -465,14 +470,17 @@ describe( "reg.js", function() {
 
           const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
 
+          let assertCount = 0 // intercept will be called for both URIs, with second call to done throwing error
+
           em.on( "response", function( res ) {
             r.ping.should.equal( dateOver1000Floored )
-            done()
+            assertCount++
+            if( assertCount === 2) done()
           } )
 
           const r = new reg( Request.init(), u )
 
-          r.pingoptions( { contact: [ { uri: "some_uri" } ] } )
+          r.pingoptions()
 
           clearTimer( r )
 
