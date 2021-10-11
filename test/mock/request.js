@@ -52,7 +52,7 @@ class Request {
         {
           uri: "some_uri",
           params: {
-            methods: "some_value"
+            methods: '\"some_value"' // punctuation intended, for testing of Registrar reg onauth callback
           }
         },
         {

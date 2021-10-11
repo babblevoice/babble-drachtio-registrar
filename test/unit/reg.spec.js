@@ -58,7 +58,7 @@ describe( "reg.js", function() {
         { name: "useragent", expected: "some_useragent" },
         { name: "allow", calculated: JSON.stringify( r.allow ), expected: "[\"SOME\",\"_\",\"ALLOW\"]" },
         { name: "callid", expected: "some_call-id" },
-        { name: "contact", calculated: JSON.stringify( r.contact ), expected: "[{\"uri\":\"some_uri\",\"params\":{\"methods\":\"some_value\"}},{\"uri\":\"some_uri\"}]" },
+        { name: "contact", calculated: JSON.stringify( r.contact ), expected: "[{\"uri\":\"some_uri\",\"params\":{\"methods\":\"\\\"some_value\\\"\"}},{\"uri\":\"some_uri\"}]" },
         { name: "aor", expected: "some_aor" },
         { name: "expires", expected: 1 },
         { name: "user", expected: u },
@@ -336,7 +336,7 @@ describe( "reg.js", function() {
 
     describe( "destroy", function() {
 
-      it( "emits the unregister event with the info method", function( done ) {
+      it( "emits the unregister event with the return value of the info method", function( done ) {
 
         const em = new EventEmitter()
 
@@ -419,7 +419,7 @@ describe( "reg.js", function() {
 
       } )
 
-      describe( "SRF request method callback", function() {
+      describe( "handlerequest", function() {
 
         it( "calls the registrar options consolelog method passing an error message on SRF request error", function( done ) {
 

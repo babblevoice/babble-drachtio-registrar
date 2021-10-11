@@ -9,6 +9,7 @@ const should = require( "chai" ).should()
 const Request = require( "../mock/request.js" )
 
 const Registrar = require( "../../lib/registrar.js" )
+const domain = require( "../../lib/domain.js" )
 
 /*
   Assertions
@@ -191,14 +192,11 @@ describe( "registrar.js", function() {
 
       } )
 
-      it( "calls the registration regping method and the sendok function passing the request and response if the registration is found", function() {
+      it( "calls the registration regping method if the registration is found", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 
         registrar._isauthed = () => r
-        registrar._sendok = ( request, response, options ) => {
-          ( request === req && response === res ).should.equal( true )
-        }
 
         let hasCalled = false
         const r = {
@@ -217,6 +215,29 @@ describe( "registrar.js", function() {
         registrar.reg( req, res, () => {} )
 
         hasCalled.should.equal( true );
+
+      } )
+
+      it( "calls the sendok function passing the request and response if the registration is found", function() {
+
+        const registrar = new Registrar( { srf: { use: () => {} } } )
+
+        registrar._isauthed = () => r
+        registrar._sendok = ( request, response ) => {
+          ( request === req && response === res ).should.equal( true )
+        }
+
+        const r = { onexpire: () => {}, regping: () => {} }
+
+        const req = Request.init( {
+          registration: {
+            aor: "sip:1000@some.realm",
+            expires: 0
+          }
+        }, false ) // no registrar property
+        const res = { send: () => {} }
+
+        registrar.reg( req, res, () => {} )
 
       } )
 
@@ -407,6 +428,137 @@ describe( "registrar.js", function() {
 
         registrar.reg( req, res, () => {}, intercept )
 
+        it( "sets the allow property to the first request registration contact params methods property, replacing quotation marks, if present and if no request registrar allow property is present", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} } } )
+
+          const req = Request.init( {
+            registration: { aor: "sip:1000@some.realm" },
+            headers: { allow: undefined }
+          }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const intercept = options => ( request, response, cb ) => {
+            cb()
+            request.registrar.allow.should.equal( "some_value" )
+          }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "sets status to 423 and headers applying the request registrar contact and options minexpires properties if the options regping property is not present and the options minexpires property is present and greater than the request registrar expires property, which is not 0", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} } } )
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: ( status, options ) => {
+            status.should.equal( 423 )
+            options.headers.Contact.should.equal( "expires=1" )
+            options.headers[ "Min-Expires" ].should.equal( 3600 )
+          } }
+
+          const intercept = options => ( request, response, cb ) => { cb() }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "adds a domain named per the request authorization realm property to the domains property if not present", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const realm = Request.defaultValues.authorization.realm
+
+          const intercept = options => ( request, response, cb ) => {
+            cb()
+            registrar.domains.get( realm ).should.be.an.instanceof( domain )
+          }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "removes the domain named on the request authorization realm property if it has an empty users property", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+          const temp = domain.prototype.reg
+          domain.prototype.reg = () => {} // prevents instantiation and addition in domain.reg
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const realm = Request.defaultValues.authorization.realm
+
+          const intercept = options => ( request, response, cb ) => {
+            cb()
+            registrar.domains.has( realm ).should.equal( false )
+            domain.prototype.reg = temp
+          }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "calls the domain reg method passing the request", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+          const temp = domain.prototype.reg
+          domain.prototype.reg = request => {
+            request.should.be.an.instanceof( Request )
+            domain.prototype.reg = temp
+          }
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const intercept = options => ( request, response, cb ) => { cb() }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "calls the sendok function passing the request and response", function() {
+
+          const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+          registrar._sendok = ( request, response ) => {
+            ( request === req && response === res ).should.equal( true )
+          }
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const intercept = options => ( request, response, cb ) => { cb() }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
+
+        it( "emits the register event with the return value of the registration info method", function() {
+
+          const em = new EventEmitter()
+
+          const registrar = new Registrar( { em, srf: { use: () => {} }, regping: () => {} } )
+
+          const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
+          registrar.on( "register", data => {
+            data.registeredat.should.equal( dateOver1000Floored )
+          } )
+
+          const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
+          const res = { send: () => {} }
+
+          const intercept = options => ( request, response, cb ) => { cb() }
+
+          registrar.reg( req, res, () => {}, intercept )
+
+        } )
       } )
     } )
 
@@ -491,7 +643,7 @@ describe( "registrar.js", function() {
 
     describe( "_sendok", function() {
 
-      it( "sets headers applying the regping option if present", function() {
+      it( "sets status to 200 and headers applying the regping option if present", function() {
 
         const registrar = new Registrar( {
           srf: { use: () => {} },
@@ -508,7 +660,7 @@ describe( "registrar.js", function() {
 
       } )
 
-      it( "sets headers applying request registrar properties if regping option not present", function() {
+      it( "sets status to 200 and headers applying request registrar properties if regping option not present", function() {
 
         const registrar = new Registrar( { srf: { use: () => {} } } )
 

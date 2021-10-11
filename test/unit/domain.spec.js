@@ -64,7 +64,6 @@ describe( "domain.js", function() {
 
         const username = Request.defaultValues.authorization.username
 
-        d.users.has( username ).should.equal( true )
         d.users.get( username ).should.be.an.instanceof( user )
 
         user.prototype.reg = temp
