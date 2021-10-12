@@ -469,6 +469,11 @@ describe( "registrar.js", function() {
 
           const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
 
+          const temp = domain.prototype.reg
+          domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
+            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+          }
+
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
           const res = { send: () => {} }
 
@@ -480,6 +485,8 @@ describe( "registrar.js", function() {
           }
 
           registrar.reg( req, res, () => {}, intercept )
+
+          domain.prototype.reg = temp
 
         } )
 
@@ -532,12 +539,19 @@ describe( "registrar.js", function() {
             ( request === req && response === res ).should.equal( true )
           }
 
+          const temp = domain.prototype.reg
+          domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
+            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+          }
+
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
           const res = { send: () => {} }
 
           const intercept = options => ( request, response, cb ) => { cb() }
 
           registrar.reg( req, res, () => {}, intercept )
+
+          domain.prototype.reg = temp
 
         } )
 
@@ -547,10 +561,15 @@ describe( "registrar.js", function() {
 
           const registrar = new Registrar( { em, srf: { use: () => {} }, regping: () => {} } )
 
-          const dateOver1000Floored = parseInt( Math.floor( new Date() / 1000 ).toString() ) //.replace( /(\d*)\.\d*/g, "$1" ) )
           registrar.on( "register", data => {
-            data.registeredat.should.equal( dateOver1000Floored )
+            data.should.equal( "some_info" )
           } )
+
+          const temp = domain.prototype.reg
+          domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
+            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+            return { info: () => "some_info" }
+          }
 
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
           const res = { send: () => {} }
@@ -558,6 +577,8 @@ describe( "registrar.js", function() {
           const intercept = options => ( request, response, cb ) => { cb() }
 
           registrar.reg( req, res, () => {}, intercept )
+
+          domain.prototype.reg = temp
 
         } )
       } )

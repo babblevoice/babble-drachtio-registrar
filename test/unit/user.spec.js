@@ -59,7 +59,7 @@ describe( "user.js", function() {
 
       it( "returns if no registration is present under the call ID on the registrations property and the request registrar expires property is 0", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
 
@@ -71,7 +71,7 @@ describe( "user.js", function() {
 
       it( "lists a new registration under the call ID on the registrations property if not present and returns it if the request registrar expires property is not 0", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
 
@@ -92,7 +92,7 @@ describe( "user.js", function() {
         const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
-        const r = new reg( Request.init(), u )
+        const r = {}
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
@@ -105,8 +105,6 @@ describe( "user.js", function() {
 
         should.equal( retVal, undefined )
 
-        clearTimer( r )
-
       } )
 
       it( "updates a registration listed under the call ID on the registrations property, returns it and calls the registrar options consolelog method passing a status message if the request registrar expires property is not 0", function() {
@@ -117,7 +115,7 @@ describe( "user.js", function() {
           options: { consolelog: msg => { message = msg } }
         }
         const u = new user( { username: "some_user" }, registrar.options )
-        const r = new reg( Request.init(), u )
+        const r = {}
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
@@ -131,8 +129,6 @@ describe( "user.js", function() {
         hasCalled.should.equal( true )
         retVal.should.equal( r )
 
-        clearTimer( r )
-
       } )
     } )
 
@@ -143,7 +139,7 @@ describe( "user.js", function() {
         const registrar = { options: {} }
 
         const u = new user( {}, registrar.options )
-        const r = new reg( Request.init(), u )
+        const r = {}
 
         const callid = Request.defaultValues.headers[ "call-id" ]
 
@@ -155,8 +151,6 @@ describe( "user.js", function() {
 
         hasCalled.should.equal( true )
         u.registrations.has( callid ).should.equal( false )
-
-        clearTimer( r )
 
       } )
     })

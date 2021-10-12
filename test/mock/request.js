@@ -39,6 +39,7 @@ class Request {
     uri: "", // Request only
 
     authorization: {
+      realm: "some.realm",
       username: "some_username"
     },
     registrar: {

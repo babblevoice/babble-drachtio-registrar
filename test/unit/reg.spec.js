@@ -290,19 +290,16 @@ describe( "reg.js", function() {
         const u = { options: registrar.options, remove: () => {} }
         const r = new reg( Request.init(), u )
 
-        const ping = r.ping
-
-        const runShould = () => { r.ping.should.not.equal( ping ) }
-
-        let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
+        const initialPing = r.ping
 
         const intercept = () => {
-          if( !hasAsserted ) {
-            hasAsserted = true; r.regping(); runShould(); clearTimer( r ); done()
-          }
+          r.regping()
+          r.ping.should.not.equal( initialPing )
+          clearTimer( r )
+          done()
         }
 
-        setTimeout( intercept, 1000 )
+        setTimeout( intercept, 1000 ) // ping recorded in seconds
 
       } )
     } )
@@ -313,16 +310,12 @@ describe( "reg.js", function() {
 
         const registrar = { options: {} }
 
-        const runShould = function( ci ) { ci.should.equal( r.callid ) }
-
-        let hasAsserted = false // all active timeouts will call intercept, with second call to done throwing error
-
         const u = {
           options: registrar.options,
           remove: ci => {
-            if( !hasAsserted ) {
-              hasAsserted = true; runShould( ci ); clearTimer( r ); done()
-            }
+            ci.should.equal( r.callid )
+            clearTimer( r )
+            done()
           }
         }
         const r = new reg( Request.init(), u )
@@ -396,7 +389,10 @@ describe( "reg.js", function() {
 
         const intercept = ( uri, obj, cb) => {
           if( !hasAsserted ) {
-            hasAsserted = true; runShould( uri, obj, cb ); clearTimer( r ); done()
+            runShould( uri, obj, cb )
+            hasAsserted = true
+            clearTimer( r )
+            done()
           }
         }
 
@@ -423,8 +419,6 @@ describe( "reg.js", function() {
 
         it( "calls the registrar options consolelog method passing an error message on SRF request error", function( done ) {
 
-          const runShould = msg2 => { msg2.should.equal( "Error sending OPTIONS: msg1" ) }
-
           let assertCount = 0 // intercept will be called for both URIs, with second call to done throwing error
 
           const registrar = {
@@ -435,7 +429,7 @@ describe( "reg.js", function() {
                 }
               },
               consolelog: msg2 => {
-                runShould( msg2 )
+                msg2.should.equal( "Error sending OPTIONS: msg1" )
                 clearTimer( r )
                 assertCount++
                 if( assertCount === 2 ) done()

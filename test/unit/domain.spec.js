@@ -6,11 +6,8 @@ const should = require( "chai" ).should()
 
 const Request = require( "../mock/request.js" )
 
-const { clearTimer } = require( "../util/cleanup.js" )
-
 const domain = require( "../../lib/domain.js" )
 const user = require( "../../lib/user.js" )
-const reg = require( "../../lib/reg.js" )
 
 /*
   Assertions
@@ -51,7 +48,7 @@ describe( "domain.js", function() {
 
       it( "adds a user named per the request authorization username property to the users property if not present", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
 
@@ -72,7 +69,7 @@ describe( "domain.js", function() {
 
       it( "removes the user named on the request authorization username property if it has an empty registrations property", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
 
@@ -91,7 +88,7 @@ describe( "domain.js", function() {
 
       it( "calls the user reg method passing the request", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
 
@@ -106,7 +103,7 @@ describe( "domain.js", function() {
 
       it( "returns undefined if the request registrar expires property is 0", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
 
@@ -125,20 +122,19 @@ describe( "domain.js", function() {
 
       it( "returns a reg instance if the request registrar expires property is not 0", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
+        const r = {}
 
         const temp = user.prototype.reg
-        const r = new reg( Request.init(), { options: registrar.options } )
         user.prototype.reg = req => {
-          if( 0 != req.registrar.expires ) return r
+          if( 0 != req.registrar.expires ) return r // reflects return values, preventing instantiation, in user.reg
         }
 
-        d.reg( Request.init(), registrar ).should.be.an.instanceof( reg )
+        d.reg( Request.init(), registrar ).should.equal( r )
 
         user.prototype.reg = temp
-        clearTimer( r )
 
       } )
     } )
@@ -147,7 +143,7 @@ describe( "domain.js", function() {
 
       it( "returns an array containing info for each registration for each user on the users property", function() {
 
-        registrar = { options: {} }
+        const registrar = { options: {} }
 
         const d = new domain( registrar.options )
 
