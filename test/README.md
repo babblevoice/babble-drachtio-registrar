@@ -130,25 +130,30 @@ The chainable elements available beyond `.equal` are described in the [documenta
 babble-drachtio-registrar/
 
 - [x] index.js
-- [ ] lib/
+- [x] lib/
   - [x] domain.js
   - [x] reg.js
-  - [ ] registrar.js
-  - [x] sendok.js
+  - [x] registrar.js
   - [x] user.js
+
+### Interface tests
+
+events
+
+- [ ] register
+  - [x] via Registrar instance reg method
+  - [ ] configured with options ping
+  - [ ] configured with reg ping
+- [x] unregister
+  - [x] as timeout
+  - [x] as request by client, via user instance remove method
 
 ### Known issues
 
-- the reg class is used in each of domain.spec.js and user.spec.js rather than an object literal
-- the comments in the reg and Registrar module are incomplete, and the sendok module has none
+...
 
 ## Future tasks
 
 - implement integration testing
-- implement interface testing for:
-  - register
-  - register configured with options ping
-  - register configured with reg ping
-  - unregister as timeout
-  - unregister as request by client
-- refactor modules to simplify
+- refactor modules:
+  - consider revision of registration removal and destruction
