@@ -6,7 +6,7 @@
   "scripts": {
     "code": "mocha --watch --recursive",
     "test": "mocha --recursive",
-    "docs": "jsdoc -d docs README.md index.js lib/"
+    "docs": "jsdoc -c docs/conf.json -d docs README.md index.js lib/"
   },
   "author": "Nick Knight <nick@babblevoice.com>",
   "repository": {
