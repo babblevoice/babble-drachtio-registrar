@@ -328,14 +328,14 @@ describe( "registrar.js", function() {
           } )
 
           const runShould = ( username, realm ) => {
-            username.should.equal( "some_username" )
+            username.should.equal( "1000" )
             realm.should.equal( "some.realm" )
           }
 
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
 
           const intercept = options => ( request, response, cb ) => {
-            options.passwordLookup( "some_username", "some.realm", () => {} )
+            options.passwordLookup( "1000", "some.realm", () => {} )
           }
 
           registrar.reg( req, {}, () => {}, intercept )
@@ -361,7 +361,7 @@ describe( "registrar.js", function() {
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
 
           const intercept = options => ( request, response, cb ) => {
-            options.passwordLookup( "some_username", "some.realm", runShould )
+            options.passwordLookup( "1000", "some.realm", runShould )
           }
 
           registrar.reg( req, {}, () => {}, intercept )
@@ -387,7 +387,7 @@ describe( "registrar.js", function() {
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
 
           const intercept = options => ( request, response, cb ) => {
-            options.passwordLookup( "some_username", "some.realm", runShould )
+            options.passwordLookup( "1000", "some.realm", runShould )
           }
 
           registrar.reg( req, {}, () => {}, intercept )
@@ -471,7 +471,7 @@ describe( "registrar.js", function() {
 
           const temp = domain.prototype.reg
           domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
-            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+            this.users = new Map( [ [ "1000", "some_user" ] ] )
           }
 
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
@@ -541,7 +541,7 @@ describe( "registrar.js", function() {
 
           const temp = domain.prototype.reg
           domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
-            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+            this.users = new Map( [ [ "1000", "some_user" ] ] )
           }
 
           const req = Request.init( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
@@ -567,7 +567,7 @@ describe( "registrar.js", function() {
 
           const temp = domain.prototype.reg
           domain.prototype.reg = function() { // prevents instantiation and addition in domain.reg, ensuring domain.users.size !== 0
-            this.users = new Map( [ [ "some_username", "some_user" ] ] )
+            this.users = new Map( [ [ "1000", "some_user" ] ] )
             return { info: () => "some_info" }
           }
 

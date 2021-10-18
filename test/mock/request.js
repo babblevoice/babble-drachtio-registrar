@@ -40,7 +40,7 @@ class Request {
 
     authorization: {
       realm: "some.realm",
-      username: "some_username"
+      username: "1000"
     },
     registrar: {
       useragent: "some_useragent",
@@ -88,7 +88,7 @@ class Request {
     for( let key in newValues ) {
       if( keys.includes( key ) ) {
         if( Object.prototype.toString.call( newValues[ key ] ).slice( 8, -1 ) === "Object" ) {
-          values[ key ] = { ...Request.update( newValues[ key ], values[ key ] ) }
+          values[ key ] = { ...Request.update( { ...newValues[ key ] }, { ...values[ key ] } ) }
           continue
         }
         values[ key ] = newValues[ key ]
