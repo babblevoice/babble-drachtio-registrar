@@ -6,19 +6,12 @@ const should = require( "chai" ).should()
 
 const Request = require( "../mock/request.js" )
 
-// const Srf = require( "drachtio-srf" )
+//const Srf = require( "../mock/srf.js" )
 const Registrar = require( "../../index.js" )
 
 /*
   Assertions
 */
-
-// const srf = new Srf()
-// srf.connect( { host: "127.0.0.1", port: 9022 } )
-
-// srf.on( "connect", ( err, hostport ) => {
-//   console.log( `Connected to a drachtio server listening on: ${hostport}` )
-// } )
 
 const regInfoKeys = [
   "uuid",
@@ -200,6 +193,76 @@ describe( "endpoint inspection", function() {
   } )
 
   describe( "user", function() {
+
+    it( "returns an array containing one object per registration at the realm and under the username passed, each containing information on the registration", async function() {
+
+      const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+      testValues = [
+
+        { username: "1000", callID: "some_call-id1" },
+        { username: "1001", callID: "some_call-id1" },
+        { username: "1001", callID: "some_call-id2" }
+      ]
+
+      testValues.forEach( testValue => {
+
+        const req = Request.init( { headers: { "call-id": testValue.callID }, authorization: { username: testValue.username }, registration: { aor: `sip:${ testValue.username }@some.realm` } }, false ) // no registrar property
+        const res = { send: () => {} }
+
+        const intercept = options => ( request, response, cb ) => { cb() }
+
+        registrar.reg( req, res, () => {}, intercept )
+      } )
+
+      const user = await registrar.user( "some.realm", "1001" )
+
+      testValues.filter( testValue => testValue.username === "1001" ).forEach( ( testValue, i ) => {
+
+        user[ i ].should.have.keys( regInfoKeys )
+        user[ i ].authorization.username.should.equal( testValue.username )
+        user[ i ].callid.should.equal( testValue.callID )
+      } )
+
+      testValues.forEach( testValue => {
+        registrar.domains.get( "some.realm" ).users.get( testValue.username ).remove( testValue.callID )
+      } )
+    } )
+
+    it( "returns an array containing one object per registration for the full address passed, each containing information on the registration", async function() {
+
+      const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
+
+      testValues = [
+
+        { username: "1000", callID: "some_call-id1" },
+        { username: "1001", callID: "some_call-id1" },
+        { username: "1001", callID: "some_call-id2" }
+      ]
+
+      testValues.forEach( testValue => {
+
+        const req = Request.init( { headers: { "call-id": testValue.callID }, authorization: { username: testValue.username }, registration: { aor: `sip:${ testValue.username }@some.realm` } }, false ) // no registrar property
+        const res = { send: () => {} }
+
+        const intercept = options => ( request, response, cb ) => { cb() }
+
+        registrar.reg( req, res, () => {}, intercept )
+      } )
+
+      const user = await registrar.user( "sip:1001@some.realm" )
+
+      testValues.filter( testValue => testValue.username === "1001" ).forEach( ( testValue, i ) => {
+
+        user[ i ].should.have.keys( regInfoKeys )
+        user[ i ].authorization.username.should.equal( testValue.username )
+        user[ i ].callid.should.equal( testValue.callID )
+      } )
+
+      testValues.forEach( testValue => {
+        registrar.domains.get( "some.realm" ).users.get( testValue.username ).remove( testValue.callID )
+      } )
+    } )
 
     it( "returns an empty array if the realm passed is not present", async function() {
 
