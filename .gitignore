@@ -3,7 +3,6 @@ logs
 *.log
 
 node_modules
-package-lock.json
 
 .vscode
 .eslint*
