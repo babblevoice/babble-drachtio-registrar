@@ -4,8 +4,8 @@
   "description": "A simple registrar for use with drachtio sip server",
   "main": "index.js",
   "scripts": {
-    "code": "mocha --watch --recursive",
-    "test": "mocha --recursive",
+    "code": "./node_modules/mocha/bin/mocha --watch --recursive",
+    "test": "./node_modules/mocha/bin/mocha --recursive --check-leaks",
     "docs": "jsdoc -c docs/conf.json -d docs README.md index.js lib/"
   },
   "author": "Nick Knight <nick@babblevoice.com>",
@@ -29,6 +29,6 @@
   "devDependencies": {
     "chai": "^4.3.4",
     "jsdoc": "^3.6.7",
-    "mocha": "^9.1.1"
+    "mocha": "^9.1.3"
   }
 }
