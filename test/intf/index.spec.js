@@ -109,8 +109,7 @@ describe( "endpoint inspection", function() {
     it( "returns an array containing a list of all domains", function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [ "some.realm1", "some.realm2" ]
+      let testValues = [ "some.realm1", "some.realm2" ]
 
       testValues.forEach( testValue => {
 
@@ -137,8 +136,7 @@ describe( "endpoint inspection", function() {
     it( "returns an array containing one object per registration at the realm passed, each containing information on the registration", function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [
+      let testValues = [
 
         { username: "1000", callID: "some_call-id1" },
         { username: "1001", callID: "some_call-id1" },
@@ -170,8 +168,7 @@ describe( "endpoint inspection", function() {
     it( "returns an empty array if the realm passed is not present", function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [ "some.realm1", "some.realm2" ]
+      let testValues = [ "some.realm1", "some.realm2" ]
 
       testValues.forEach( testValue => {
 
@@ -197,9 +194,7 @@ describe( "endpoint inspection", function() {
     it( "returns an array containing one object per registration at the realm and under the username passed, each containing information on the registration", async function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [
-
+      let testValues = [
         { username: "1000", callID: "some_call-id1" },
         { username: "1001", callID: "some_call-id1" },
         { username: "1001", callID: "some_call-id2" }
@@ -232,9 +227,7 @@ describe( "endpoint inspection", function() {
     it( "returns an array containing one object per registration for the full address passed, each containing information on the registration", async function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [
-
+      let testValues = [
         { username: "1000", callID: "some_call-id1" },
         { username: "1001", callID: "some_call-id1" },
         { username: "1001", callID: "some_call-id2" }
@@ -267,8 +260,7 @@ describe( "endpoint inspection", function() {
     it( "returns an empty array if the realm passed is not present", async function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
-
-      testValues = [ "some.realm1", "some.realm2" ]
+      let testValues = [ "some.realm1", "some.realm2" ]
 
       testValues.forEach( testValue => {
 
@@ -292,8 +284,7 @@ describe( "endpoint inspection", function() {
 
       const registrar = new Registrar( { srf: { use: () => {} }, regping: () => {} } )
 
-      testValues = [ "1000", "1001" ]
-
+      let testValues = [ "1000", "1001" ]
       testValues.forEach( testValue => {
 
         const req = Request.init( { authorization: { username: testValue }, registration: { aor: `sip:${ testValue }@some.realm` } }, false ) // no registrar property
