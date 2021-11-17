@@ -19,11 +19,11 @@ srf.on( "connect", ( err, hostport ) => {
 const r = new Registrar( {
   "srf": srf,
   //"optionsping": 30, /* Seconds between our OPTIONs packet to registered client - controls the stale flag */
-  "regping": 30, /* Number of seconds we force the client to reregister without requiring reauth - controls the stale flag */
-  "staletime": 180, /* number of seconds we consider a client stale if we don't hear a repsponce from an OPTIONS or REGISTER ping */
+  "regping": 30, /* Number of seconds we force the client to re-register without requiring reauth - controls the stale flag */
+  "staletime": 180, /* number of seconds we consider a client stale if we don't hear a response from an OPTIONS or REGISTER ping */
   "expires": 3600, /* default expires */
   "minexpires": 3600, /* Force the client with 423 to extend expires to this amount - conflicts with regping */
-  "passwordLookup": ( username, realm, callback ) => {
+  "userlookup": ( username, realm, callback ) => {
 
     realm = realm.split( "." ).reverse().join( "." )
     let key = "directory." + realm + "." + username
@@ -50,37 +50,6 @@ r.on( "unregister", ( reg ) => {
 
 ```
 
-When a client registers, console.log prints
-```javascript
-register
-{
-  callid: '2F3-oH2flkh8pfTcU1DLpQ..',
-  contacts: [
-    'sip:1000@127.0.0.1:48105;transport=UDP;rinstance=d208d680c1c3827b'
-  ],
-  aor: 'sip:1000@bling.babblevoice.com;transport=UDP',
-  expires: 60,
-  authorization: {
-    scheme: 'digest',
-    username: '1000',
-    realm: 'bling.babblevoice.com',
-    nonce: '160736058665800',
-    uri: 'sip:bling.babblevoice.com;transport=UDP',
-    response: '13e54e232c4de3d1ca0b2bbb34fef341',
-    qop: 'auth',
-    nc: '00000001',
-    cnonce: '474bea1fae20c44c5202054dba62808c',
-    algorithm: 'MD5'
-  },
-  registeredat: 1607360586,
-  useragent: 'Z 5.3.8 rv2.9.30-mod',
-  network: { source_address: '127.0.0.1', source_port: 48105, protocol: 'udp' },
-  expiresat: 1607360646,
-  expiresin: 60,
-  stale: false
-}
-```
-
 An example config file to be used with this example (config/default.json)
 
 ```json
@@ -94,8 +63,8 @@ An example config file to be used with this example (config/default.json)
     "com": {
       "babblevoice": {
         "bling": {
-          "1000": { "secret": "<yourpassword>" },
-          "1001": { "secret": "<yourpassword>" }
+          "1000": { "secret": "<yourpassword>", "display": "Kermit" },
+          "1001": { "secret": "<yourpassword>", "display": "Piggy" }
         }
       }
     }
