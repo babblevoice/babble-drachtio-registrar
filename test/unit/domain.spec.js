@@ -27,7 +27,6 @@ describe( "domain.js", function() {
     d.set( r )
     d.set( r2 )
 
-    expect( d.get( "bob" ) ).to.be.a( "array" ).to.have.lengthOf( 2
-     )
+    expect( d.get( "bob" ) ).to.be.a( "array" ).to.have.lengthOf( 2 )
   } )
 } )
