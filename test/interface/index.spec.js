@@ -137,7 +137,7 @@ describe( "interface", function() {
     let user = await registrar.user( "dummy.com", "bob" )
     expect( user ).to.be.a( "array" ).to.have.lengthOf( 1 )
 
-    user = await registrar.user( "sip:bob@dummy.com" )
+    user = await registrar.user( "bob@dummy.com" )
     expect( user ).to.be.a( "array" ).to.have.lengthOf( 1 )
 
     let domain = await registrar.users( "dummy.com" )
