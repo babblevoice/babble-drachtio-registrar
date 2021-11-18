@@ -80,7 +80,7 @@ r.realms()
 r.users( "bling.babblevoice.com" )
 r.user( "bling.babblevoice.com", "1000" )
 // or
-r.user( "sip:1000@bling.babblevoice.com" )
+r.user( "1000@bling.babblevoice.com" )
 
 ```
 
