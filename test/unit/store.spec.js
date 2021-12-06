@@ -125,6 +125,11 @@ describe( "store.js", function() {
       "bydomain": 1
     } )
 
+    let regs = store.getdomain( "dummy.com" ).get( "someuser" )
+    expect( regs ).to.be.a( "array" ).to.have.lengthOf( 2 )
+    expect( regs[ 0 ].contacts ).to.be.a( "array" )
+    expect( regs[ 1 ].contacts ).to.be.a( "array" )
+
     let realms = store.realms()
     expect( realms.length ).to.equal( 1 )
     expect( realms[ 0 ] ).to.equal( "dummy.com" )
