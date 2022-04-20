@@ -17,14 +17,14 @@ module.exports.calculateauth = ( req, proxyauth, nc = 1 ) => {
   auth.uri = "sip:dummy.com;transport=UDP"
 
   /* not what the auth object was designed for, but useful */
-  let ourauth = new sipauth.auth()
+  let ourauth = sipauth.create()
   ourauth._nonce = auth.nonce
   ourauth._qop = auth.qop
-  ourauth._nc = nc
-  let cnonce = crypto.randomBytes( 8 ).toString( "hex" )
-  let hash = ourauth.calcauthhash( "bob", "biloxi", "dummy.com", "sip:dummy.com;transport=UDP", "REGISTER", cnonce )
 
   let ncstr = ( "" + nc ).padStart( 8, "0" )
+
+  let cnonce = crypto.randomBytes( 8 ).toString( "hex" )
+  let hash = ourauth.calcauthhash( "bob", "biloxi", "dummy.com", "sip:dummy.com;transport=UDP", "REGISTER", cnonce, ncstr )
 
   let authstr = `Digest username="bob",
 realm="${auth.realm}",
