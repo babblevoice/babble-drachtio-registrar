@@ -514,9 +514,7 @@ describe( "interface", function() {
     |<------200 ok (expires 1)---------|(4)
     delay (at least 0.5 x expires)
     |-------reg (expires 1)----------->|(5)
-    |<--------407 proxy auth-----------|(6)
-    |-------reg (expires 1 w-auth)---->|(7)
-    |<--------------200 ok-------------|(8)
+    |<--------------200 ok-------------|(6)
 
     We should only receive the one event.
     */
@@ -586,24 +584,14 @@ describe( "interface", function() {
 
     await new Promise( ( r ) => { setTimeout( () => r(), 10 ) } )
 
-    /* Step 7 */
-    req = Request.create()
-    req.set( "Expires", "1" )
-    pa = ourevents[ 2 ].body.headers[ "Proxy-Authenticate" ]
-    calculateauth( req, pa )
-    cb( req, res )
-
-    await new Promise( ( r ) => { setTimeout( () => r(), 10 ) } )
-
     /* Finally check */
     expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
     expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (4) */
     expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 1 )
-    expect( ourevents[ 2 ].code ).to.equal( 407 ) /* (6) */
-    expect( ourevents[ 3 ].code ).to.equal( 200 ) /* (8) */
-    expect( ourevents[ 3 ].body.headers.Expires ).to.equal( 1 )
+    expect( ourevents[ 2 ].code ).to.equal( 200 ) /* (6) */
+    expect( ourevents[ 2 ].body.headers.Expires ).to.equal( 1 )
     expect( userlookupcount ).to.equal( 1 )
-    expect( registerevent ).to.equal( 2 )
+    expect( registerevent ).to.equal( 1 ) /* only when full expires happens - not when polling frequent expires */
 
     store.get( req ).destroy()
 
