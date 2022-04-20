@@ -74,7 +74,7 @@ describe( "interface", function() {
 
     expect( reginfo ).to.be.a( "object" )
     expect( reginfo.uuid ).to.be.a( "string" )
-    expect( reginfo.initial ).to.be.a( "boolean" ).to.be.false
+    expect( reginfo.initial ).to.be.a( "boolean" ).to.be.true
     expect( reginfo.callid ).to.be.a( "string" ).to.equal( "some_call-id" )
     expect( reginfo.contacts ).to.be.a( "array" )
     expect( reginfo.contacts ).to.be.a( "array" ).to.have.lengthOf( 1 )
