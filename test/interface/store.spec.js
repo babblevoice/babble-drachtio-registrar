@@ -80,7 +80,9 @@ describe( "store", function() {
     expect( contacts.display ).to.be.a( "string" ).to.equal( "Kermit Frog" )
     expect( contacts.uri ).to.be.a( "string" ).to.equal( "bob@dummy.com" )
     expect( contacts.contacts ).to.be.a( "array" ).to.have.lengthOf( 1 )
-    expect( contacts.contacts[ 0 ] ).to.be.a( "string" ).to.equal( "sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP" )
+    expect( contacts.contacts[ 0 ].contact ).to.be.a( "string" ).to.equal( "sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP" )
+    expect( contacts.contacts[ 0 ].network ).to.be.a( "object" )
+    expect( contacts.contacts[ 0 ].network.rport ).to.be.true
 
     userreginfo = await r.user( { "realm": "dummy.com", "username": "bob" } )
     expect( userreginfo ).to.be.a( "array" ).to.have.lengthOf( 1 )
