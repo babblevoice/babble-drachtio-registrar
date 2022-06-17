@@ -1,5 +1,5 @@
 {
-  "name": "@tinpotnick/babble-drachtio-registrar",
+  "name": "@babblevoice/babble-drachtio-registrar",
   "version": "1.0.2",
   "description": "A simple registrar for use with drachtio sip server",
   "main": "index.js",
