@@ -1,6 +1,6 @@
 
 const crypto = require( "crypto" )
-const sipauth = require( "babble-drachtio-auth" )
+const sipauth = require( "@babblevoice/babble-drachtio-auth" )
 
 module.exports.calculateauth = ( req, proxyauth, nc = 1 ) => {
 

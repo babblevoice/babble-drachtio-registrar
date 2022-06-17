@@ -21,6 +21,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@babblevoice/babble-drachtio-auth": "^1.0.0",
     "drachtio-srf": "^4.4.47",
     "uuid": "^8.3.2"
   },
