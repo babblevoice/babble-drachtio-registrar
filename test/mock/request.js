@@ -38,7 +38,8 @@ class Request {
       "contact": "<sip:1000@192.168.0.141:59095;rinstance=35a53d8fb715f5dc;transport=UDP>",
       "to": "<sip:1000@dummy.com;transport=UDP>",
       "from": "<sip:1000@dummy.com;transport=UDP>;tag=d9e2de25",
-      "user-agent": "some_useragent"
+      "user-agent": "some_useragent",
+      "via": "SIP/2.0/UDP 127.0.0.1:39313;branch=z9hG4bK-524287-1---daa70e79328bdffc;rport=37435"
     }
     this._parsedheaders = {
       "contact": [ {
