@@ -688,7 +688,6 @@ describe( "interface", function() {
 
   it( `register then options ping and check ping time is updated`, async function() {
     /*
-    /*
     |---------reg (expires 3600)------>|(1)
     |<--------407 proxy auth-----------|(2)
     |-------reg (expires 3600 w-auth)->|(3)
@@ -757,7 +756,7 @@ describe( "interface", function() {
     req.set( "Expires", "3600" )
     cb( req, res )
 
-    let reginfo = await regevent
+    await regevent
 
     let preping = store.get( req ).ping
     let optionspacket = await optionspromise
@@ -787,5 +786,100 @@ describe( "interface", function() {
     expect( preping ).to.not.equal( postping )
 
     store.get( req ).destroy()
+  } )
+
+
+  it( `fail register auth and check event`, async function() {
+    /*
+    |---------reg (expires 3600)------>|(1)
+    |<--------407 proxy auth-----------|(2)
+    |-------reg (expires 3600 w-auth)->|(3)
+    |<--------------403----------------|(4)
+    */
+
+    let ourevents = []
+    let cb
+    let userlookupcount = 0
+
+    let options = {
+        srf: {
+          use: ( method, fn ) => {
+            expect( method ).to.equal( "register" )
+            cb = fn
+          },
+          request: ( uri, options, requesthandler ) => {
+          }
+      },
+      userlookup: ( username, realm ) => {
+        userlookupcount++
+        expect( username ).to.equal( "bob" )
+        expect( realm ).to.equal( "dummy.com" )
+        return {
+          "secret": "biloxi",
+          "display": "Kermit Frog"
+        }
+      },
+      em: new events.EventEmitter(),
+      optionsping: 1
+    }
+
+    const registrar = new Registrar( options )
+
+    let registerfailedevent = 0
+    let failauthobject
+    let regeventresolve
+    let regevent = new Promise( ( r ) => { regeventresolve = r } )
+
+    options.em.on( "register.auth.failed", ( i ) => {
+      failauthobject = i
+      if( 0 === registerfailedevent ) regeventresolve( i )
+      registerfailedevent++
+    } )
+
+    options.em.on( "register", ( i ) => {
+      /* this cannot happen */
+      expect( false ).to.be.true
+    } )
+
+
+    let res = {
+      send: ( code, body ) => {
+        ourevents.push( { code, body } )
+      }
+    }
+
+    /* Step 1. send register */
+    let req = Request.create()
+    cb( req, res )
+
+    /* Step 3. now auth against auth request */
+    req = Request.create()
+
+    /* auth - but break */
+    let authstr = `Digest username="bob",
+realm="dummy.com",
+nonce="wrong",
+uri="someuri",
+qop=auth,
+algorithm=MD5,
+nc=00000001,
+cnonce="wrongcnonce",
+response="123",
+opaque="456"`
+
+    req.set( "Proxy-Authorization", authstr )
+    req.set( "Expires", "3600" )
+    cb( req, res )
+
+    await regevent
+
+    /* Finally check */
+    expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
+    expect( ourevents[ 1 ].code ).to.equal( 403 ) /* (4) */
+    expect( registerfailedevent ).to.equal( 1 )
+
+    expect( failauthobject ).to.be.an( "object" )
+    expect( failauthobject.network.source_address ).to.equal( "some_source_address" )
+console.log(failauthobject)
   } )
 } )

@@ -1,6 +1,6 @@
 {
   "name": "@babblevoice/babble-drachtio-registrar",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A simple registrar for use with drachtio sip server",
   "main": "index.js",
   "scripts": {
