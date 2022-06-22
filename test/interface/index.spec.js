@@ -880,6 +880,5 @@ opaque="456"`
 
     expect( failauthobject ).to.be.an( "object" )
     expect( failauthobject.network.source_address ).to.equal( "some_source_address" )
-console.log(failauthobject)
   } )
 } )
