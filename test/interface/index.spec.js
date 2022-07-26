@@ -881,4 +881,118 @@ opaque="456"`
     expect( failauthobject ).to.be.an( "object" )
     expect( failauthobject.network.source_address ).to.equal( "some_source_address" )
   } )
+
+  it( `polycom fail reg - captured`, async function() {
+
+    /*
+    |---------reg (expires 3600)------>|(1)
+    |<--------401 auth-----------------|(2)
+    |-------reg (expires 3600 w-auth)->|(3)
+    |<--------------200----------------|(4)
+    */
+
+    const ourevents = []
+    const options = {
+      proxy: false,
+      regping: 30,
+      srf: {
+        use: () => {}
+      },
+      userlookup: ( username, realm ) => {
+        ourevents.push( { username, realm } )
+        return { username, realm, secret: "sometestsecret" }
+      }
+    }
+
+    const registrar = new Registrar( options )
+
+    const res = {
+      send: ( code, options ) => ourevents.push( { code, options } )
+    }
+
+    /* Step 1. send register */
+    const req = {
+      method: "REGISTER",
+      msg: {
+        method: "REGISTER",
+        uri: "sip:pierrefouquet.babblevoice.com;transport=udp"
+      },
+      get: ( hdr ) => {
+        switch ( hdr ) {
+          case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
+          case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
+          case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
+          case "Allow": return
+        }
+      },
+      getParsedHeader: ( hdr ) => {
+        switch ( hdr ) {
+          case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
+          case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
+        }
+      },
+      has: ( hdr ) => {
+        switch( hdr ) {
+          case "User-Agent": return true
+          case "from": return true
+        }
+      },
+      source_address: "82.71.31.12",
+      source_port: 52917,
+      protocol: "udp"
+    }
+    
+    registrar._reg( req, res )
+
+    /* Step 2 */
+    expect( ourevents[ 0 ].code ).to.equal( 401 )
+
+    /* Step 3 */
+    delete req.registrar
+
+    req.get = ( hdr ) => {
+      switch ( hdr ) {
+        case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
+        case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
+        case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
+        case "Allow": return
+        case "Expires": return "3600"
+        case "Authorization": return `Digest username="1013", realm="pierrefouquet.babblevoice.com", nonce="7d4b7aa44cda192fecad03e48a45ca59", qop=auth, cnonce="nrQhP0p3w8fjTMn", nc=00000001, opaque="59ea226be29c979bb10105e8ba654779", uri="sip:pierrefouquet.babblevoice.com;transport=udp", response="ab709ea589a580790e2e1cea141f7107", algorithm=MD5`
+        case "Contact": return `<sip:1013@82.71.31.12:52917;transport=udp>;methods="INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER"`
+      }
+    }
+
+    req.getParsedHeader = ( hdr ) => {
+      switch ( hdr ) {
+        case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
+        case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
+      }
+    }
+
+    req.has = ( hdr ) => {
+      switch( hdr ) {
+        case "User-Agent": return true
+        case "from": return true
+        case "Authorization": return true
+      }
+    }
+
+    /* fool our auth */
+    const r = store.get( req )
+    r._auth._nonce = "7d4b7aa44cda192fecad03e48a45ca59"
+    r._auth._opaque = "59ea226be29c979bb10105e8ba654779"
+
+    const p = registrar._reg( req, res )
+    if( p ) await p
+
+    expect( ourevents[ 1 ].username ).to.equal( "1013" )
+    expect( ourevents[ 1 ].realm ).to.equal( "pierrefouquet.babblevoice.com" )
+    expect( ourevents[ 2 ].code ).to.equal( 200 )
+    expect( r.allow.length ).to.equal( 12 )
+
+    console.log(ourevents[ 2 ].options)
+
+    r.destroy()
+
+  } )
 } )
