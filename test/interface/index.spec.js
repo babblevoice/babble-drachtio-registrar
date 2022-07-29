@@ -421,182 +421,6 @@ describe( "interface", function() {
     store.get( req ).destroy()
   } )
 
-  it( `register with regping no second auth`, async function() {
-    /*
-    |---------reg (expires 3660)------>|(1)
-    |<--------407 proxy auth-----------|(2)
-    |-------reg (expires 3600 w-auth)->|(3)
-    |<------200 ok (expires 60)--------|(4)
-    |-------reg (expires 60)---------->|(5)
-    |<--------------200 ok-------------|(6)
-
-    We should only receive the one event.
-    */
-
-    let ourevents = []
-    let cb
-    let userlookupcount = 0
-
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
-      },
-      userlookup: ( username, realm ) => {
-        userlookupcount++
-        expect( username ).to.equal( "bob" )
-        expect( realm ).to.equal( "dummy.com" )
-        return {
-          "secret": "biloxi",
-          "display": "Kermit Frog"
-        }
-      },
-      em: new events.EventEmitter(),
-      regping: 60
-    }
-
-    const registrar = new Registrar( options )
-
-    let regevent = new Promise( ( resolve ) => {
-      options.em.on( "register", ( i ) => {
-        resolve( i )
-      } )
-    } )
-
-    let res = {
-      send: ( code, body ) => {
-        ourevents.push( { code, body } )
-      }
-    }
-
-    /* Step 1. send register */
-    let req = Request.create()
-    cb( req, res )
-
-    /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
-    req = Request.create()
-    calculateauth( req, pa )
-    req.set( "Expires", "3600" )
-    cb( req, res )
-
-    let reginfo = await regevent
-
-    await new Promise( ( r ) => { setTimeout( () => r(), 20 ) } )
-
-    /* Step 5. */
-    req = Request.create()
-    req.set( "Expires", "60" )
-
-    cb( req, res )
-
-    await new Promise( ( r ) => { setTimeout( () => r(), 20 ) } )
-
-    /* Finally check */
-    expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
-    expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (4) */
-    expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 60 )
-    expect( ourevents[ 2 ].code ).to.equal( 200 ) /* (6) */
-    expect( ourevents[ 2 ].body.headers.Expires ).to.equal( 60 )
-    expect( userlookupcount ).to.equal( 1 )
-
-    store.get( req ).destroy()
-
-  } )
-
-  it( `register with regping no second auth after stale time`, async function() {
-    /*
-    |---------reg (expires 3660)------>|(1)
-    |<--------407 proxy auth-----------|(2)
-    |-------reg (expires 1 w-auth)---->|(3)
-    |<------200 ok (expires 1)---------|(4)
-    delay (at least 0.5 x expires)
-    |-------reg (expires 1)----------->|(5)
-    |<--------------200 ok-------------|(6)
-
-    We should only receive the one event.
-    */
-
-    let ourevents = []
-    let cb
-    let userlookupcount = 0
-
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
-      },
-      userlookup: ( username, realm ) => {
-        userlookupcount++
-        expect( username ).to.equal( "bob" )
-        expect( realm ).to.equal( "dummy.com" )
-        return {
-          "secret": "biloxi",
-          "display": "Kermit Frog"
-        }
-      },
-      em: new events.EventEmitter(),
-      regping: 1
-    }
-
-    const registrar = new Registrar( options )
-
-    let registerevent = 0
-    let regeventresolve
-    let regevent = new Promise( ( r ) => { regeventresolve = r } )
-
-    options.em.on( "register", ( i ) => {
-      if( 0 === registerevent ) regeventresolve( i )
-      registerevent++
-    } )
-
-    let res = {
-      send: ( code, body ) => {
-        ourevents.push( { code, body } )
-      }
-    }
-
-    /* Step 1. send register */
-    let req = Request.create()
-    cb( req, res )
-
-    /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
-
-    req = Request.create()
-    calculateauth( req, pa )
-    req.set( "Expires", "1" )
-    cb( req, res )
-
-    let reginfo = await regevent
-
-    await new Promise( ( r ) => { setTimeout( () => r(), 800 ) } )
-
-    /* Step 5. */
-    req = Request.create()
-    req.set( "Expires", "1" )
-
-    cb( req, res )
-
-    await new Promise( ( r ) => { setTimeout( () => r(), 10 ) } )
-
-    /* Finally check */
-    expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
-    expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (4) */
-    expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 1 )
-    expect( ourevents[ 2 ].code ).to.equal( 200 ) /* (6) */
-    expect( ourevents[ 2 ].body.headers.Expires ).to.equal( 1 )
-    expect( userlookupcount ).to.equal( 1 )
-    expect( registerevent ).to.equal( 1 ) /* only when full expires happens - not when polling frequent expires */
-
-    store.get( req ).destroy()
-
-  } )
-
   it( `register with regping and all auth`, async function() {
     /*
     |---------reg (expires 3600)------>|(1)
@@ -974,6 +798,7 @@ opaque="456"`
         case "User-Agent": return true
         case "from": return true
         case "Authorization": return true
+        case "Contact": return true
       }
     }
 
@@ -989,8 +814,6 @@ opaque="456"`
     expect( ourevents[ 1 ].realm ).to.equal( "pierrefouquet.babblevoice.com" )
     expect( ourevents[ 2 ].code ).to.equal( 200 )
     expect( r.allow.length ).to.equal( 12 )
-
-    console.log(ourevents[ 2 ].options)
 
     r.destroy()
 

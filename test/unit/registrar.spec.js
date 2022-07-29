@@ -39,7 +39,7 @@ describe( "registrar.js", function() {
     expect( r.options.expires ).to.equal( 3600 )
     expect( r.options.minexpires ).to.equal( 3600 )
     expect( r.options.staletime ).to.equal( 300 )
-    expect( r.options.authtimeout ).to.equal( 5000 )
+    expect( r.options.authtimeout ).to.equal( 60000 )
   } )
 
   it( "sets the options em property if not set on options passed", function() {
