@@ -57,16 +57,21 @@ describe( "store", function() {
 
     /* Step 1. send register */
     let req = Request.create()
+    req.protocol = "udp"
+    req.source_address = "1.1.1.1"
     cb( req, res )
 
     /* Step 3. now auth against auth request */
     let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
+    req.protocol = "udp"
+    req.source_address = "1.1.1.1"
+
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
     cb( req, res )
 
-    let reginfo = await regevent
+    await regevent
 
     let userreginfo = await r.user( "dummy.com", "bob" )
     let contacts = await r.contacts( "bob@dummy.com" )
@@ -80,7 +85,7 @@ describe( "store", function() {
     expect( contacts.display ).to.be.a( "string" ).to.equal( "Kermit Frog" )
     expect( contacts.uri ).to.be.a( "string" ).to.equal( "bob@dummy.com" )
     expect( contacts.contacts ).to.be.a( "array" ).to.have.lengthOf( 1 )
-    expect( contacts.contacts[ 0 ].contact ).to.be.a( "string" ).to.equal( "sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP" )
+    expect( contacts.contacts[ 0 ].contact ).to.be.a( "string" ).to.equal( "sip:1000@1.1.1.1:5060;rinstance=302da93c3a2ae72b;transport=UDP" )
     expect( contacts.contacts[ 0 ].network ).to.be.a( "object" )
     expect( contacts.contacts[ 0 ].network.rport ).to.be.true
 
