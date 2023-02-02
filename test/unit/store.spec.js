@@ -13,11 +13,11 @@ describe( "store.js", function() {
     store.clear()
   } )
 
-  it( `store pre auth`, async function() {
+  it( "store pre auth", async function() {
 
-    let req = request.create()
-    let res = new response()
-    let r = new reg( req, res )
+    const req = request.create()
+    const res = new response()
+    const r = new reg( req, res )
 
     expect( store.stats() ).to.deep.equal( {
       "bycallid": 1,
@@ -32,10 +32,10 @@ describe( "store.js", function() {
     } )
   } )
 
-  it( `store post auth`, async function() {
-    let req = request.create( {} )
-    let res = new response()
-    let r = new reg( req, res )
+  it( "store post auth", async function() {
+    const req = request.create( {} )
+    const res = new response()
+    const r = new reg( req, res )
 
     r._authorization = {
       "realm": "dummy.com",
@@ -62,7 +62,6 @@ describe( "store.js", function() {
       "bydomain": 1
     } )
 
-    let d = store.get( req, res )
 
     r.destroy()
 
@@ -74,10 +73,10 @@ describe( "store.js", function() {
   } )
 
 
-  it( `store auth x 2`, async function() {
-    let req = request.create()
-    let res = new response()
-    let r = new reg( req, res )
+  it( "store auth x 2", async function() {
+    const req = request.create()
+    const res = new response()
+    const r = new reg( req, res )
 
     r._authorization = {
       "realm": "dummy.com",
@@ -93,10 +92,10 @@ describe( "store.js", function() {
     }
 
 
-    let req2 = request.create()
+    const req2 = request.create()
     req2.set( "call-id", "othercallid" )
-    let res2 = new response()
-    let r2 = new reg( req2, res2 )
+    const res2 = new response()
+    const r2 = new reg( req2, res2 )
 
     /* mimick an auth */
     r2._authorization = {
@@ -125,12 +124,12 @@ describe( "store.js", function() {
       "bydomain": 1
     } )
 
-    let regs = store.getdomain( "dummy.com" ).get( "someuser" )
+    const regs = store.getdomain( "dummy.com" ).get( "someuser" )
     expect( regs ).to.be.a( "array" ).to.have.lengthOf( 2 )
     expect( regs[ 0 ].contacts ).to.be.a( "array" )
     expect( regs[ 1 ].contacts ).to.be.a( "array" )
 
-    let realms = store.realms()
+    const realms = store.realms()
     expect( realms.length ).to.equal( 1 )
     expect( realms[ 0 ] ).to.equal( "dummy.com" )
 

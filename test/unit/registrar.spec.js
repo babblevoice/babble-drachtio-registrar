@@ -11,7 +11,6 @@ const request = require( "../mock/request.js" )
 const response = require( "../mock/response.js" )
 
 const registrar = require( "../../lib/registrar.js" )
-const domain = require( "../../lib/domain.js" )
 const store = require( "../../lib/store.js" )
 
 
@@ -68,7 +67,7 @@ describe( "registrar.js", function() {
 
     const r = new registrar( { srf: { use: () => {} } } )
 
-    let req = request.create()
+    const req = request.create()
     req.registrar = {}
 
     const invoke = () => { r._reg( req, {}, () => {} ) }
@@ -97,7 +96,7 @@ describe( "registrar.js", function() {
       srf: { use: () => {} },
       userlookup: ( username, realm ) => {
         runShould( username, realm )
-        return new Promise( ( res, rej ) => { res( "some_value" ) } )
+        return new Promise( ( res ) => { res( "some_value" ) } )
       }
     } )
 
@@ -108,7 +107,7 @@ describe( "registrar.js", function() {
 
     const req = request.create()
 
-    const intercept = options => ( request, response, cb ) => {
+    const intercept = options => () => {
       options.passwordLookup( "1000", "some.realm", () => {} )
     }
 
@@ -121,8 +120,8 @@ describe( "registrar.js", function() {
 
     const r = new registrar( {
       srf: { use: () => {} },
-      userlookup: ( username, realm ) => {
-        return new Promise( ( res, rej ) => { res( { secret: "some_secret" } ) } )
+      userlookup: () => {
+        return new Promise( ( res ) => { res( { secret: "some_secret" } ) } )
       }
     } )
 
@@ -135,7 +134,7 @@ describe( "registrar.js", function() {
 
     const req = request.create( { registration: { aor: "sip:1000@some.realm" } }, false ) // no registrar property
 
-    const intercept = options => ( request, response, cb ) => {
+    const intercept = options => () => {
       options.passwordLookup( "1000", "some.realm", runShould )
     }
 
@@ -147,7 +146,7 @@ describe( "registrar.js", function() {
 
     const r = new registrar( {
       srf: { use: () => {} },
-      userlookup: ( username, realm ) => {
+      userlookup: () => {
         return new Promise( ( res, rej ) => { rej( "some_value" ) } )
       }
     } )
@@ -161,7 +160,7 @@ describe( "registrar.js", function() {
 
     const req = request.create()
 
-    const intercept = options => ( request, response, cb ) => {
+    const intercept = options => () => {
       options.passwordLookup( "1000", "some.realm", runShould )
     }
 
@@ -172,7 +171,7 @@ describe( "registrar.js", function() {
   it( "returns an empty array if the key passed is not present on the domains property", async function() {
 
     const r = new registrar( { srf: { use: () => {} } } )
-    let users = await r.users( "some.domain" )
+    const users = await r.users( "some.domain" )
     users.should.eql( [] )
 
   } )

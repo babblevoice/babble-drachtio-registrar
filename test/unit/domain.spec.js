@@ -1,5 +1,4 @@
 
-const should = require( "chai" ).should()
 const expect = require( "chai" ).expect
 
 const reg = require( "../mock/reg.js" )

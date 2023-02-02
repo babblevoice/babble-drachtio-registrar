@@ -3,7 +3,7 @@ let callid = 1
 
 class reg {
 
-  constructor( domain = "dummy.com", username = "bob" ) {
+  constructor( username = "bob" ) {
 
     this._authorization = {
       "username": username

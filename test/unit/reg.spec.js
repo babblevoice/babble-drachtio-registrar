@@ -1,11 +1,3 @@
-/*
-  Dependencies
-*/
-
-const { EventEmitter } = require( "events" )
-const uuid = require( "uuid" )
-
-const should = require( "chai" ).should()
 const expect = require( "chai" ).expect
 
 const Request = require( "../mock/request.js" )
@@ -31,8 +23,8 @@ describe( "reg.js", function() {
 
   it( "returns an instance of itself when called with the new keyword", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -51,8 +43,8 @@ describe( "reg.js", function() {
     const registrar = { options: { divisor: 1000 } }
     const u = { authorization: { username: "some_user" }, options: registrar.options }
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -81,8 +73,8 @@ describe( "reg.js", function() {
 
   it( "returns a boolean value for expiry elapsed", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -103,8 +95,8 @@ describe( "reg.js", function() {
 
   it( "returns a boolean value for expiry approaching", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -125,8 +117,8 @@ describe( "reg.js", function() {
 
   it( "reg.info returns correct structure", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -134,7 +126,7 @@ describe( "reg.js", function() {
     const u = { authorization: {}, options: registrar.options }
 
     const r = reg.create( Request.create(), res, u )
-    let info = r.info()
+    const info = r.info()
 
     expect( info ).to.have.property( "uuid" ).that.is.a( "string" )
     expect( info ).to.have.property( "initial" ).that.is.a( "boolean" )
@@ -158,8 +150,8 @@ describe( "reg.js", function() {
 
   it( "returns an expiresat property being the sum of the registeredat and expires properties", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -167,7 +159,7 @@ describe( "reg.js", function() {
     const u = { options: registrar.options }
 
     const r = reg.create( Request.create(), res, u )
-    let info = r.info()
+    const info = r.info()
     expect( info.registeredat ).to.equal( info.expiresat - info.expiresin )
 
     r.destroy()
@@ -176,8 +168,8 @@ describe( "reg.js", function() {
 
   it( "returns a stale property being a boolean generated with the ping and registrar options staletime properties", function() {
 
-    let res = {
-      send: ( code, body ) => {
+    const res = {
+      send: () => {
       }
     }
 
@@ -186,7 +178,7 @@ describe( "reg.js", function() {
 
     r.ping = r._now() - 2
 
-    let info = r.info()
+    const info = r.info()
 
     info.stale.should.be.a( "boolean" )
     info.stale.should.equal( true )

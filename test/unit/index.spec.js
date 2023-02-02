@@ -1,5 +1,4 @@
 
-const should = require( "chai" ).should()
 const registrar = require( "../../index.js" )
 
 
