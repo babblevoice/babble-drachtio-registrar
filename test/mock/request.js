@@ -1,6 +1,6 @@
 class Request {
 
-  constructor( defaultvalues ) {
+  constructor() {
     this.isNewInvite = true
 
     /*
@@ -43,21 +43,21 @@ class Request {
     }
     this._parsedheaders = {
       "contact": [ {
-              "name": undefined,
-              "uri": 'sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP',
-              "params": {}
-          }
-        ],
-        "to": {
-            "name": undefined,
-            "uri": "sip:1000@dummy.com;transport=UDP",
-            "params": {}
-        },
-        "from": {
-            "name": undefined,
-            "uri": "sip:1000@dummy.com;transport=UDP",
-            "params": { tag: "6354b92a" }
-        }
+        "name": undefined,
+        "uri": "sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP",
+        "params": {}
+      }
+      ],
+      "to": {
+        "name": undefined,
+        "uri": "sip:1000@dummy.com;transport=UDP",
+        "params": {}
+      },
+      "from": {
+        "name": undefined,
+        "uri": "sip:1000@dummy.com;transport=UDP",
+        "params": { tag: "6354b92a" }
+      }
     }
   }
 

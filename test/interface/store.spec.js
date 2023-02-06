@@ -1,7 +1,6 @@
 
 const calculateauth = require( "../util/auth.js" ).calculateauth
 
-const should = require( "chai" ).should()
 const expect = require( "chai" ).expect
 
 
@@ -13,7 +12,7 @@ const events = require( "events" )
 
 
 describe( "store", function() {
-  it( `register then check more details on our store for regstration`, async function() {
+  it( "register then check more details on our store for regstration", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -22,14 +21,14 @@ describe( "store", function() {
     |<--------200 ok-------------------|(4)
     Then check our store public interface
     */
-    let ourevents = []
+    const ourevents = []
     let cb
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -43,13 +42,13 @@ describe( "store", function() {
     }
     const r = new registrar( options )
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -62,7 +61,7 @@ describe( "store", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     req.protocol = "udp"
     req.source_address = "1.1.1.1"
@@ -74,7 +73,7 @@ describe( "store", function() {
     await regevent
 
     let userreginfo = await r.user( "dummy.com", "bob" )
-    let contacts = await r.contacts( "bob@dummy.com" )
+    const contacts = await r.contacts( "bob@dummy.com" )
     /* the fuller extend of this structure is checked elsewhere */
     expect( userreginfo ).to.be.a( "array" ).to.have.lengthOf( 1 )
     expect( userreginfo[ 0 ].contacts ).to.be.a( "array" ).to.have.lengthOf( 1 )

@@ -1,7 +1,6 @@
 
 const calculateauth = require( "../util/auth.js" ).calculateauth
 
-const should = require( "chai" ).should()
 const expect = require( "chai" ).expect
 
 const events = require( "events" )
@@ -13,7 +12,7 @@ const Registrar = require( "../../index.js" )
 
 
 describe( "interface", function() {
-  it( `register, auth, event then check store`, async function() {
+  it( "register, auth, event then check store", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -21,14 +20,14 @@ describe( "interface", function() {
     |-----reg ( expires 3600 w-auth)-->|(3)
     |<--------200 ok-------------------|(4)
     */
-    let ourevents = []
+    const ourevents = []
     let cb
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -42,13 +41,13 @@ describe( "interface", function() {
     }
     const registrar = new Registrar( options )
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -59,13 +58,13 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
     cb( req, res )
 
-    let reginfo = await regevent
+    const reginfo = await regevent
 
     /* Finally check */
     expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
@@ -112,7 +111,7 @@ describe( "interface", function() {
     expect( domain ).to.be.a( "array" ).to.have.lengthOf( 0 )
   } )
 
-  it( `register, auth then wait for stale and check flag`, async function() {
+  it( "register, auth then wait for stale and check flag", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -121,14 +120,14 @@ describe( "interface", function() {
     |<--------200 ok-------------------|(4)
     Wait - is stale flag set
     */
-    let ourevents = []
+    const ourevents = []
     let cb
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -141,15 +140,14 @@ describe( "interface", function() {
       em: new events.EventEmitter(),
       staletime: 0
     }
-    const registrar = new Registrar( options )
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -160,11 +158,10 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
-    debugger
     cb( req, res )
 
     let reginfo = await regevent
@@ -178,7 +175,7 @@ describe( "interface", function() {
 
     await new Promise( ( r ) => { setTimeout( () => r(), 1100 ) } )
 
-    let r = store.get( req )
+    const r = store.get( req )
     reginfo = r.info()
     expect( reginfo.stale ).to.be.a( "boolean" ).to.be.true
 
@@ -186,7 +183,7 @@ describe( "interface", function() {
     r.destroy()
   } )
 
-  it( `register, auth then wait for expires and check cleaned up`, async function() {
+  it( "register, auth then wait for expires and check cleaned up", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -195,14 +192,14 @@ describe( "interface", function() {
     |<--------200 ok-------------------|(4)
     Wait - until expires
     */
-    let ourevents = []
+    const ourevents = []
     let cb
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -216,21 +213,20 @@ describe( "interface", function() {
       minexpires: 1
     }
 
-    const registrar = new Registrar( options )
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let unregevent = new Promise( ( resolve ) => {
+    const unregevent = new Promise( ( resolve ) => {
       options.em.on( "unregister", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -241,7 +237,7 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "1" )
@@ -254,13 +250,13 @@ describe( "interface", function() {
     expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (4) */
     expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 1 )
 
-    let reginfo = await unregevent
+    const reginfo = await unregevent
 
     expect( reginfo ).to.be.a( "object" )
     expect( store.get( req ) ).to.be.false
   } )
 
-  it( `register, auth then send expire`, async function() {
+  it( "register, auth then send expire", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -270,14 +266,14 @@ describe( "interface", function() {
     |-----reg ( expires 0 w-auth)----->|(5)
     |<--------200 ok-------------------|(6)
     */
-    let ourevents = []
+    const ourevents = []
     let cb
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -290,21 +286,20 @@ describe( "interface", function() {
       em: new events.EventEmitter()
     }
 
-    const registrar = new Registrar( options )
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let unregevent = new Promise( ( resolve ) => {
+    const unregevent = new Promise( ( resolve ) => {
       options.em.on( "unregister", ( i ) => {
         resolve( i )
       } )
     } )
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -315,7 +310,7 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
@@ -335,13 +330,13 @@ describe( "interface", function() {
     expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 3600 )
     expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (6) */
 
-    let reginfo = await unregevent
+    const reginfo = await unregevent
 
     expect( reginfo ).to.be.a( "object" )
     expect( store.get( req ) ).to.be.false
   } )
 
-  it( `register with minexpires`, async function() {
+  it( "register with minexpires", async function() {
     /*
     |---------reg (expires 60)-------->|
     |<--------407 proxy auth-----------|
@@ -351,15 +346,15 @@ describe( "interface", function() {
     |<--------------200 ok-------------|
     */
 
-    let ourevents = []
+    const ourevents = []
     let cb
 
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         expect( username ).to.equal( "bob" )
@@ -373,16 +368,15 @@ describe( "interface", function() {
       minexpires: 3600
     }
 
-    let regevent = new Promise( ( resolve ) => {
+    const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
       } )
     } )
 
-    const registrar = new Registrar( options )
 
     let res
-    let event423 = new Promise( ( resolve ) => {
+    const event423 = new Promise( ( resolve ) => {
       res = {
         send: ( code, body ) => {
           ourevents.push( { code, body } )
@@ -396,7 +390,7 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 2. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "60" )
@@ -421,7 +415,7 @@ describe( "interface", function() {
     store.get( req ).destroy()
   } )
 
-  it( `register with regping and all auth`, async function() {
+  it( "register with regping and all auth", async function() {
     /*
     |---------reg (expires 3600)------>|(1)
     |<--------407 proxy auth-----------|(2)
@@ -432,16 +426,16 @@ describe( "interface", function() {
     We should only receive the one event.
     */
 
-    let ourevents = []
+    const ourevents = []
     let cb
     let userlookupcount = 0
 
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        }
       },
       userlookup: ( username, realm ) => {
         userlookupcount++
@@ -456,11 +450,10 @@ describe( "interface", function() {
       regping: 60
     }
 
-    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
-    let regevent = new Promise( ( r ) => { regeventresolve = r } )
+    const regevent = new Promise( ( r ) => { regeventresolve = r } )
 
     options.em.on( "register", ( i ) => {
       if( 0 === registerevent ) regeventresolve( i )
@@ -469,7 +462,7 @@ describe( "interface", function() {
 
     let req = Request.create()
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -479,13 +472,13 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
     cb( req, res )
 
-    let reginfo = await regevent
+    await regevent
 
     await new Promise( ( r ) => { setTimeout( () => r(), 20 ) } )
 
@@ -510,7 +503,7 @@ describe( "interface", function() {
 
   } )
 
-  it( `register then options ping and check ping time is updated`, async function() {
+  it( "register then options ping and check ping time is updated", async function() {
     /*
     |---------reg (expires 3600)------>|(1)
     |<--------407 proxy auth-----------|(2)
@@ -521,25 +514,23 @@ describe( "interface", function() {
     |---------------200 ok------------>|(4)
     */
 
-    let ourevents = []
+    const ourevents = []
     let cb
-    let userlookupcount = 0
 
     let optionspromiseresolve
-    let optionspromise = new Promise( ( r ) => optionspromiseresolve = r )
+    const optionspromise = new Promise( ( r ) => optionspromiseresolve = r )
 
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          },
-          request: ( uri, options, requesthandler ) => {
-            optionspromiseresolve( { uri, options, requesthandler })
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        },
+        request: ( uri, options, requesthandler ) => {
+          optionspromiseresolve( { uri, options, requesthandler })
+        }
       },
       userlookup: ( username, realm ) => {
-        userlookupcount++
         expect( username ).to.equal( "bob" )
         expect( realm ).to.equal( "dummy.com" )
         return {
@@ -551,11 +542,10 @@ describe( "interface", function() {
       optionsping: 1
     }
 
-    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
-    let regevent = new Promise( ( r ) => { regeventresolve = r } )
+    const regevent = new Promise( ( r ) => { regeventresolve = r } )
 
     options.em.on( "register", ( i ) => {
       if( 0 === registerevent ) regeventresolve( i )
@@ -563,7 +553,7 @@ describe( "interface", function() {
     } )
 
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -574,7 +564,7 @@ describe( "interface", function() {
     cb( req, res )
 
     /* Step 3. now auth against auth request */
-    let pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
+    const pa = ourevents[ 0 ].body.headers[ "Proxy-Authenticate" ]
     req = Request.create()
     calculateauth( req, pa )
     req.set( "Expires", "3600" )
@@ -582,8 +572,8 @@ describe( "interface", function() {
 
     await regevent
 
-    let preping = store.get( req ).ping
-    let optionspacket = await optionspromise
+    const preping = store.get( req ).ping
+    const optionspacket = await optionspromise
 
     optionspacket.requesthandler( false, {
       "on": ( event, cb ) => {
@@ -592,7 +582,7 @@ describe( "interface", function() {
       }
     } )
 
-    let postping = store.get( req ).ping
+    const postping = store.get( req ).ping
 
     /* Finally check */
     expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
@@ -613,7 +603,7 @@ describe( "interface", function() {
   } )
 
 
-  it( `fail register auth and check event`, async function() {
+  it( "fail register auth and check event", async function() {
     /*
     |---------reg (expires 3600)------>|(1)
     |<--------407 proxy auth-----------|(2)
@@ -621,21 +611,19 @@ describe( "interface", function() {
     |<--------------403----------------|(4)
     */
 
-    let ourevents = []
+    const ourevents = []
     let cb
-    let userlookupcount = 0
 
-    let options = {
-        srf: {
-          use: ( method, fn ) => {
-            expect( method ).to.equal( "register" )
-            cb = fn
-          },
-          request: ( uri, options, requesthandler ) => {
-          }
+    const options = {
+      srf: {
+        use: ( method, fn ) => {
+          expect( method ).to.equal( "register" )
+          cb = fn
+        },
+        request: () => {
+        }
       },
       userlookup: ( username, realm ) => {
-        userlookupcount++
         expect( username ).to.equal( "bob" )
         expect( realm ).to.equal( "dummy.com" )
         return {
@@ -647,12 +635,11 @@ describe( "interface", function() {
       optionsping: 1
     }
 
-    const registrar = new Registrar( options )
 
     let registerfailedevent = 0
     let failauthobject
     let regeventresolve
-    let regevent = new Promise( ( r ) => { regeventresolve = r } )
+    const regevent = new Promise( ( r ) => { regeventresolve = r } )
 
     options.em.on( "register.auth.failed", ( i ) => {
       failauthobject = i
@@ -660,13 +647,13 @@ describe( "interface", function() {
       registerfailedevent++
     } )
 
-    options.em.on( "register", ( i ) => {
+    options.em.on( "register", () => {
       /* this cannot happen */
       expect( false ).to.be.true
     } )
 
 
-    let res = {
+    const res = {
       send: ( code, body ) => {
         ourevents.push( { code, body } )
       }
@@ -680,7 +667,7 @@ describe( "interface", function() {
     req = Request.create()
 
     /* auth - but break */
-    let authstr = `Digest username="bob",
+    const authstr = `Digest username="bob",
 realm="dummy.com",
 nonce="wrong",
 uri="someuri",
@@ -706,7 +693,7 @@ opaque="456"`
     expect( failauthobject.network.source_address ).to.equal( "some_source_address" )
   } )
 
-  it( `polycom fail reg - captured`, async function() {
+  it( "polycom fail reg - captured", async function() {
 
     /*
     |---------reg (expires 3600)------>|(1)
@@ -743,22 +730,22 @@ opaque="456"`
       },
       get: ( hdr ) => {
         switch ( hdr ) {
-          case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
-          case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
-          case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
-          case "Allow": return
+        case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
+        case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
+        case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
+        case "Allow": 
         }
       },
       getParsedHeader: ( hdr ) => {
         switch ( hdr ) {
-          case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
-          case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
+        case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
+        case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
         }
       },
       has: ( hdr ) => {
         switch( hdr ) {
-          case "User-Agent": return true
-          case "from": return true
+        case "User-Agent": return true
+        case "from": return true
         }
       },
       source_address: "82.71.31.12",
@@ -776,29 +763,29 @@ opaque="456"`
 
     req.get = ( hdr ) => {
       switch ( hdr ) {
-        case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
-        case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
-        case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
-        case "Allow": return
-        case "Expires": return "3600"
-        case "Authorization": return `Digest username="1013", realm="pierrefouquet.babblevoice.com", nonce="7d4b7aa44cda192fecad03e48a45ca59", qop=auth, cnonce="nrQhP0p3w8fjTMn", nc=00000001, opaque="59ea226be29c979bb10105e8ba654779", uri="sip:pierrefouquet.babblevoice.com;transport=udp", response="ab709ea589a580790e2e1cea141f7107", algorithm=MD5`
-        case "Contact": return `<sip:1013@82.71.31.12:52917;transport=udp>;methods="INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER"`
+      case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
+      case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
+      case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
+      case "Allow": return
+      case "Expires": return "3600"
+      case "Authorization": return "Digest username=\"1013\", realm=\"pierrefouquet.babblevoice.com\", nonce=\"7d4b7aa44cda192fecad03e48a45ca59\", qop=auth, cnonce=\"nrQhP0p3w8fjTMn\", nc=00000001, opaque=\"59ea226be29c979bb10105e8ba654779\", uri=\"sip:pierrefouquet.babblevoice.com;transport=udp\", response=\"ab709ea589a580790e2e1cea141f7107\", algorithm=MD5"
+      case "Contact": return "<sip:1013@82.71.31.12:52917;transport=udp>;methods=\"INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER\""
       }
     }
 
     req.getParsedHeader = ( hdr ) => {
       switch ( hdr ) {
-        case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
-        case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
+      case "from": return { uri: "sip:1013@pierrefouquet.babblevoice.com" }
+      case "Contact": return [ { uri: "sip:1013@82.71.31.12:52917", params: { methods: "INVITE,ACK,BYE,CANCEL,OPTIONS,INFO,MESSAGE,SUBSCRIBE,NOTIFY,PRACK,UPDATE,REFER" } } ]
       }
     }
 
     req.has = ( hdr ) => {
       switch( hdr ) {
-        case "User-Agent": return true
-        case "from": return true
-        case "Authorization": return true
-        case "Contact": return true
+      case "User-Agent": return true
+      case "from": return true
+      case "Authorization": return true
+      case "Contact": return true
       }
     }
 
