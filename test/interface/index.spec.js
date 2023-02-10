@@ -141,6 +141,10 @@ describe( "interface", function() {
       staletime: 0
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
+
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
@@ -213,6 +217,9 @@ describe( "interface", function() {
       minexpires: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
@@ -285,6 +292,10 @@ describe( "interface", function() {
       },
       em: new events.EventEmitter()
     }
+
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
 
     const regevent = new Promise( ( resolve ) => {
@@ -368,6 +379,10 @@ describe( "interface", function() {
       minexpires: 3600
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
+
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
@@ -450,6 +465,9 @@ describe( "interface", function() {
       regping: 60
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
@@ -542,6 +560,9 @@ describe( "interface", function() {
       optionsping: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
@@ -635,6 +656,9 @@ describe( "interface", function() {
       optionsping: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerfailedevent = 0
     let failauthobject
@@ -796,6 +820,7 @@ opaque="456"`
 
     const p = registrar._reg( req, res )
     if( p ) await p
+    await new Promise( ( r ) => { setTimeout( () => r(), 10 ) } )
 
     expect( ourevents[ 1 ].username ).to.equal( "1013" )
     expect( ourevents[ 1 ].realm ).to.equal( "pierrefouquet.babblevoice.com" )
