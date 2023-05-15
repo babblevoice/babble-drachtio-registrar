@@ -157,6 +157,8 @@ describe( "interface", function() {
       }
     }
 
+    new Registrar( options )
+
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -239,6 +241,7 @@ describe( "interface", function() {
       }
     }
 
+    new Registrar( options )
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -316,6 +319,7 @@ describe( "interface", function() {
       }
     }
 
+    new Registrar( options )
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -400,6 +404,7 @@ describe( "interface", function() {
       }
     } )
 
+    new Registrar( options )
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -478,6 +483,7 @@ describe( "interface", function() {
       registerevent++
     } )
 
+    new Registrar( options )
     let req = Request.create()
 
     const res = {
@@ -580,6 +586,7 @@ describe( "interface", function() {
       }
     }
 
+    new Registrar( options )
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -683,6 +690,7 @@ describe( "interface", function() {
       }
     }
 
+    new Registrar( options )
     /* Step 1. send register */
     let req = Request.create()
     cb( req, res )
@@ -818,9 +826,7 @@ opaque="456"`
     r._auth._nonce = "7d4b7aa44cda192fecad03e48a45ca59"
     r._auth._opaque = "59ea226be29c979bb10105e8ba654779"
 
-    const p = registrar._reg( req, res )
-    if( p ) await p
-    await new Promise( ( r ) => { setTimeout( () => r(), 10 ) } )
+    await registrar._reg( req, res )
 
     expect( ourevents[ 1 ].username ).to.equal( "1013" )
     expect( ourevents[ 1 ].realm ).to.equal( "pierrefouquet.babblevoice.com" )
