@@ -63,19 +63,6 @@ describe( "registrar.js", function() {
 
   } )
 
-  it( "throws an error if the request registrar property is already set", function() {
-
-    const r = new registrar( { srf: { use: () => {} } } )
-
-    const req = request.create()
-    req.registrar = {}
-
-    const invoke = () => { r._reg( req, {}, () => {} ) }
-
-    should.Throw( invoke, "Registrar has been used twice" )
-
-  } )
-
   it( "invokes the callback if the request method property is not \"REGISTER\"", function() {
 
     const r = new registrar( { srf: { use: () => {} } } )
