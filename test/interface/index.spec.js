@@ -141,6 +141,10 @@ describe( "interface", function() {
       staletime: 0
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
+
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
@@ -215,6 +219,9 @@ describe( "interface", function() {
       minexpires: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
@@ -288,6 +295,10 @@ describe( "interface", function() {
       },
       em: new events.EventEmitter()
     }
+
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
 
     const regevent = new Promise( ( resolve ) => {
@@ -372,6 +383,10 @@ describe( "interface", function() {
       minexpires: 3600
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
+
     const regevent = new Promise( ( resolve ) => {
       options.em.on( "register", ( i ) => {
         resolve( i )
@@ -455,6 +470,9 @@ describe( "interface", function() {
       regping: 60
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
@@ -548,6 +566,9 @@ describe( "interface", function() {
       optionsping: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerevent = 0
     let regeventresolve
@@ -642,6 +663,9 @@ describe( "interface", function() {
       optionsping: 1
     }
 
+    // this is needed
+    // eslint-disable-next-line no-unused-vars
+    const registrar = new Registrar( options )
 
     let registerfailedevent = 0
     let failauthobject
