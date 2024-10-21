@@ -9,6 +9,7 @@ const store = require( "../../lib/store.js" )
 const Request = require( "../mock/request.js" )
 
 const Registrar = require( "../../index.js" )
+const sipauth = require( "@babblevoice/babble-drachtio-auth" )
 
 
 describe( "interface", function() {
@@ -65,6 +66,10 @@ describe( "interface", function() {
     cb( req, res )
 
     const reginfo = await regevent
+
+    /* check we can get the auth object */
+    const u = registrar.getauth( req )
+    expect( u ).to.be.a( "object" )
 
     /* Finally check */
     expect( ourevents[ 0 ].code ).to.equal( 407 ) /* (2) */
@@ -617,7 +622,7 @@ describe( "interface", function() {
     expect( ourevents[ 1 ].code ).to.equal( 200 ) /* (4) */
     expect( ourevents[ 1 ].body.headers.Expires ).to.equal( 3600 )
 
-    expect( optionspacket.uri ).to.equal( "sip:1000@192.168.0.141:59095;rinstance=302da93c3a2ae72b;transport=UDP" )
+    expect( optionspacket.uri ).to.equal( "sip:1000@some_source_address:5060;rinstance=302da93c3a2ae72b;transport=UDP" )
     expect( optionspacket.options ).to.have.property( "method" ).that.is.a( "string" )
     expect( optionspacket.options.method ).to.equal( "OPTIONS" )
 
