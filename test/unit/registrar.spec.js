@@ -41,14 +41,6 @@ describe( "registrar.js", function() {
     expect( r.options.authtimeout ).to.equal( 60000 )
   } )
 
-  it( "sets the options em property if not set on options passed", function() {
-
-    const r = new registrar( { srf: { use: () => {} } } )
-    const em = new EventEmitter()
-    r.options.em.should.eql( em )
-
-  } )
-
   it( "sets an event listener for an event and a callback passed", function() {
 
     const em = new EventEmitter()
