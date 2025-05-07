@@ -770,7 +770,7 @@ opaque="456"`
         case "call-id": return "01ebbfc2e6918432f26ce15ef56c01d1"
         case "via": return "SIP/2.0/UDP 82.71.31.12:52917;branch=z9hG4bK86290e16B257FE95"
         case "User-Agent": return "PolycomVVX-VVX_350-UA/5.9.5.0614"
-        case "Allow": 
+        case "Allow": return ""
         }
       },
       getParsedHeader: ( hdr ) => {
@@ -783,6 +783,8 @@ opaque="456"`
         switch( hdr ) {
         case "User-Agent": return true
         case "from": return true
+        case "allow": return true
+        case "contact": return true
         }
       },
       source_address: "82.71.31.12",
@@ -823,6 +825,7 @@ opaque="456"`
       case "from": return true
       case "Authorization": return true
       case "Contact": return true
+      case "Expires": return true
       }
     }
 

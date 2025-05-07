@@ -38,7 +38,7 @@ describe( "registrar.js", function() {
     expect( r.options.expires ).to.equal( 3600 )
     expect( r.options.minexpires ).to.equal( 3600 )
     expect( r.options.staletime ).to.equal( 300 )
-    expect( r.options.authtimeout ).to.equal( 60000 )
+    expect( r.options.authtimeout ).to.equal( 5000 )
   } )
 
   it( "sets an event listener for an event and a callback passed", function() {
