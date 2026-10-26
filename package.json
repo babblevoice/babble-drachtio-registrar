@@ -4,8 +4,8 @@
   "description": "A simple registrar for use with drachtio sip server",
   "main": "index.js",
   "scripts": {
-    "code": "./node_modules/mocha/bin/mocha --watch --recursive",
-    "test": "./node_modules/mocha/bin/mocha --recursive --check-leaks",
+    "code": "./node_modules/mocha/bin/mocha.js --watch --recursive",
+    "test": "./node_modules/mocha/bin/mocha.js --recursive --check-leaks",
     "docs": "jsdoc -c docs/conf.json -d docs README.md index.js lib/",
     "check": "tsc --checkJs --noEmit --target es6 --module commonjs --skipLibCheck *.js test/**/*.js lib/*.js; ./node_modules/eslint/bin/eslint.js ./"
   },
@@ -35,7 +35,7 @@
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "jsdoc": "^4.0.2",
-    "mocha": "^9.1.3",
+    "mocha": "^10.8.2",
     "typescript": "^4.9.5"
   },
   "bugs": {
